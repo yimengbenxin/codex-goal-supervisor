@@ -44,7 +44,9 @@ Its long-term ambition is to make autonomous Agents dependable enough to carry m
 
 Its supreme rule is:
 
-> Every intervention must create net execution benefit. A control that costs more than the likely rework it prevents stays inactive.
+> Every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit: verified progress, necessary information gain, reduced rework, or a protected irreversible boundary. Intervene when an action creates uncontracted cross-module risk, repeats disproven work, or becomes part of the noise. Keep a control inactive when its likely process cost exceeds the rework it can prevent.
+
+Bounded exploration is legitimate information gain when it has a clear question, scope, and stop condition. Cross-module work is not a violation by itself; it becomes an intervention candidate when its dependencies, shared contracts, or regression path are unclear.
 
 ## What It Solves
 

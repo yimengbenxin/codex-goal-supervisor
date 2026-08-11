@@ -2,9 +2,14 @@
 
 MDCP is used here as a cross-layer rule library, not as a new workflow.
 
-Supreme rule: every protocol step must create net execution benefit. Skip,
-simplify, or serialize a step when its coordination cost exceeds the rework or
-risk it prevents.
+Supreme rule: every Agent action, and every supervisory intervention made by
+this plugin, must be justified by expected net execution benefit: verified progress, necessary
+information gain, reduced rework, or a protected irreversible boundary. An
+uncontracted cross-module effect, repeated disproven work, or an action that has
+become part of the noise is an intervention signal. Skip, simplify, or serialize
+any control whose coordination cost exceeds the rework or risk it can prevent.
+Bounded exploration remains valid when it has a clear question, scope, and stop
+condition.
 
 Source reference:
 https://github.com/HanShengrunning/-multi-dimensional-collaboration-protocol

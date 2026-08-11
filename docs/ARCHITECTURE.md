@@ -13,6 +13,8 @@ The system keeps four concerns separate:
 
 The user and the execution Agent remain the decision makers. Goal Supervisor is the project-scoped administrative layer.
 
+The governing invariant applies equally to execution and administration: every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit. An action may provide verified progress, necessary bounded information gain, reduced rework, or protection at an irreversible boundary. Cross-module work is reviewed when its dependencies, shared contracts, or regression path are unclear. A control remains inactive when its likely process cost exceeds the rework it can prevent.
+
 ## Problem Model
 
 The architecture is designed around failure patterns that emerge only during sustained execution. They are product and execution problems, not merely prompt-quality problems.

@@ -36,7 +36,7 @@ It is a rational, low-noise administrator rather than a decision maker. The user
 - No semantic-guess blocking; uncertain or unavailable LLM judgment fails open.
 - This is not a security sandbox, approval board, signature ledger, Agent OS, or corporate governance workflow.
 
-The governing rule is simple: every intervention must create net execution benefit. A control that costs more than the likely rework it prevents stays inactive.
+The governing rule applies equally to execution and administration: every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit. Bounded exploration is valid information gain when it has a clear question, scope, and stop condition. A control that costs more than the likely rework it can prevent stays inactive.
 
 See the [Codex integration architecture](https://github.com/yimengbenxin/codex-goal-supervisor/blob/main/docs/ARCHITECTURE.md) for the complete lifecycle map, runtime flow, state boundary, and failure philosophy.
 

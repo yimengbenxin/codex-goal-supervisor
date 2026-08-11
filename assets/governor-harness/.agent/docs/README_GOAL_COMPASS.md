@@ -64,4 +64,6 @@ Feedback is local-only by default. Upload requires explicit project-level consen
 
 ## Supreme Rule
 
-Every intervention must create net execution benefit. Skip any ticket, role, scan, or audit whose likely process cost exceeds the rework it prevents.
+Every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit: verified progress, necessary information gain, reduced rework, or a protected irreversible boundary. Intervene when an action creates uncontracted cross-module risk, repeats disproven work, or becomes part of the noise. Keep any ticket, role, scan, or audit inactive when its likely process cost exceeds the rework it can prevent.
+
+Bounded exploration is valid when it has a clear question, scope, and stop condition. Cross-module work is not a violation by itself; it becomes an intervention candidate only when dependencies, shared contracts, or the regression path are unclear.

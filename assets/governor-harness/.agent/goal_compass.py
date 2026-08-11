@@ -640,7 +640,8 @@ LEGACY_BUILTIN_MAIN_PATH_MARKERS = {
 }
 
 DEFAULT_PROTECTED_PRINCIPLES = [
-    "Every process step must create net execution benefit; do not let the harness become project noise or obstruction.",
+    "Every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit; do not let either execution or administration become project noise or obstruction.",
+    "Bounded exploration is valid information gain when it has a clear question, scope, and stop condition.",
     "Prefer end-to-end product progress over local subsystem perfection.",
     "Do not let local subsystems consume the main product goal.",
     "Do not let edge cases redefine the core product.",
@@ -764,18 +765,26 @@ product work.
 
 ## Supreme Rule
 
-Every intervention must create net execution benefit. Keep the background layer
-quiet and call an explicit capability only for a concrete event where its likely
-saved rework exceeds its process cost.
+Every Agent action, and every supervisory intervention made by this plugin,
+must be justified by expected net execution benefit: verified progress, necessary information gain,
+reduced rework, or a protected irreversible boundary. Keep the background layer
+quiet and call an explicit capability only when its likely saved rework exceeds
+its process cost. Bounded exploration is valid when it has a clear question,
+scope, and stop condition.
 """
 
 MDCP_PROTOCOL_MD = """# Multi-Dimensional Collaboration Protocol For Goal Compass
 
 MDCP is used here as a cross-layer rule library, not as a new workflow.
 
-Supreme rule: every protocol step must create net execution benefit. Skip,
-simplify, or serialize a step when its coordination cost exceeds the rework or
-risk it prevents.
+Supreme rule: every Agent action, and every supervisory intervention made by
+this plugin, must be justified by expected net execution benefit: verified progress, necessary
+information gain, reduced rework, or a protected irreversible boundary. An
+uncontracted cross-module effect, repeated disproven work, or an action that has
+become part of the noise is an intervention signal. Skip, simplify, or serialize
+any control whose coordination cost exceeds the rework or risk it can prevent.
+Bounded exploration remains valid when it has a clear question, scope, and stop
+condition.
 
 Source reference:
 https://github.com/HanShengrunning/-multi-dimensional-collaboration-protocol
