@@ -99,6 +99,7 @@ flowchart TB
     UC -. "new sessions only" .-> CR
 
     FB["Local redacted feedback outbox"] -. "explicit project consent, full edition only" .-> FS["Feedback receiver"]
+    FS -. "optional server-only mirror" .-> GH["Private GitHub feedback archive"]
 ```
 
 The implementation adapts eight Codex hook lifecycle events, the Codex plugin skill surface, a timeout-bounded Codex CLI judgment path, versioned marketplace installation, and native macOS/Windows/Linux update schedulers. See [Codex integration architecture](docs/ARCHITECTURE.md) for the exact mapping and failure boundaries.
@@ -171,10 +172,12 @@ The convergence controller uses both layers. Explicit North Star anti-goals and 
 - **Custodian:** optional `request --text ...` analysis for meaningful goal/scope changes.
 - **Company roles:** optional independent specialist work. Zero roles is valid; missing optional receipts do not block delivery.
 - **Specialist role library:** an optional pinned Agency Agents catalog lets the main thread search and read complete expert prompts without making those profiles decision authorities or copying them into the user project.
+- **Expert-assisted Goal authoring:** an explicit `goal-brief` call may select one high-confidence industry expert to provide structured domain input. The main thread remains the sole Goal author; weak matches produce no expert injection.
 - **Auditor:** optional `check`; `close` remains strict only about truthful machine certification.
 - **Janitor:** optional MARK_ONLY artifact review. It cannot move or delete product files.
 - **Bounded tickets:** optional contracts when isolation, machine acceptance, or parallel ownership creates net benefit.
 - **Convergence:** optional `convergence` status and iteration records separate activity from evidence-backed progress and retain the latest recovery checkpoint.
+- **Collaboration liveness:** cross-thread praise and agreement never count as progress. Two evidence-free handoffs produce `CONSENSUS_WITHOUT_PROGRESS` and end mutual review in favor of execution, validation, or one concrete escalation.
 
 Normal product work is valid without an ACTIVE ticket.
 
@@ -328,7 +331,7 @@ Exact North Star deviation incidents use a separate persistent counter. The same
 
 ## Privacy
 
-Diagnostic feedback is local-only by default. Explicit project-level consent is required; only then does the plugin automatically register the device and keep its revocable credential private. Users never configure a Token, and there is no web/manual/file upload surface. The receiver accepts only bounded Goal Supervisor JSON metadata; delivery failures remain queued locally and never block product work.
+Diagnostic feedback is local-only by default. Explicit project-level consent is required; only then does the plugin automatically register the device and keep its revocable credential private. Users never configure a Token, and there is no web/manual/file upload surface. The receiver accepts only bounded Goal Supervisor JSON metadata; delivery failures remain queued locally and never block product work. An operator may optionally batch those already-validated sanitized events into a dedicated private GitHub repository from the server. No GitHub write credential is shipped to clients, and GitHub is not a direct client upload endpoint.
 
 ## Verification
 

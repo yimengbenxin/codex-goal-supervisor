@@ -52,6 +52,7 @@ The ordering is deliberate: **real business capability first, the minimum effect
 | Codex CLI | Invoke a sparse, read-only structured LLM Judge with timeout and caching | Review high-value ambiguity before a targeted rail | Not resident; malformed, unavailable, or timed-out judgment fails open |
 | Codex Goal mode | Maintain a detailed execution contract separate from the one-sentence North Star | Give the long loop concrete modules, dependencies, outputs, and acceptance | Goal Supervisor is not written into the product objective |
 | Codex marketplace | Publish separate full and update-only Git channels into the versioned Codex cache | Make updates reproducible without cross-edition capability drift | Updater refuses downgrade and cross-edition replacement |
+| Optional private GitHub feedback archive | Mirror only server-validated sanitized events in bounded batches | Centralize maintainer triage without distributing write credentials | Clients never talk to GitHub with write authority; mirror failure retains SQLite state |
 | Native device schedulers | Use LaunchAgent, Task Scheduler, or systemd user timer for a low-priority update check | Keep installed versions current without project hooks doing network work | Update checks never activate a project or alter project state |
 
 ## Runtime Flow
