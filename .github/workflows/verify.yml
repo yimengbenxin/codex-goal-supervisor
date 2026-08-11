@@ -1,0 +1,29 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile
+        run: python -m compileall -q assets/governor-harness/.agent scripts verification/tests
+      - name: Verification suite
+        run: python -m unittest -q verification.tests.test_goal_compass
+      - name: Selftest
+        run: python assets/governor-harness/.agent/selftest/test_goal_compass.py
+

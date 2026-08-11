@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# These snapshots and fixtures are hashed byte-for-byte on every platform.
+assets/role-packs/agency-agents/** text eol=lf
+verification/fixtures/** text eol=lf
