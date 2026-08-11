@@ -7,9 +7,7 @@ description: Use when the user explicitly asks to install or use Codex Goal Supe
 
 Codex Goal Supervisor is a project tool, not a mandatory harness. Its supreme rule is:
 
-> Every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit: verified progress, necessary information gain, reduced rework, or a protected irreversible boundary. Intervene when an action creates uncontracted cross-module risk, repeats disproven work, or becomes part of the noise. Keep a control inactive when its likely process cost exceeds the rework it can prevent.
-
-Bounded exploration is valid when it has a clear question, scope, and stop condition. Cross-module work is not a violation by itself; intervene only when dependencies, shared contracts, or the regression path are unclear. Do not require a new form, role, ticket, or audit merely to prove that this rule was considered.
+> Every action taken by the model and every supervisory intervention by this plugin must produce net execution benefit. Any action that may affect other modules without constraint or become noise for the entire project must be managed. If the cost of a control by this plugin exceeds the rework it can prevent, that control must remain inactive.
 
 Treat its capabilities as a collection of goal-mode problem-solving skills, not
 as a worker that takes over the product task. It may teach the execution agent

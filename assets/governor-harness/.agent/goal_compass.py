@@ -640,8 +640,9 @@ LEGACY_BUILTIN_MAIN_PATH_MARKERS = {
 }
 
 DEFAULT_PROTECTED_PRINCIPLES = [
-    "Every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit; do not let either execution or administration become project noise or obstruction.",
-    "Bounded exploration is valid information gain when it has a clear question, scope, and stop condition.",
+    "Every action taken by the model and every supervisory intervention by this plugin must produce net execution benefit.",
+    "Any action that may affect other modules without constraint or become noise for the entire project must be managed.",
+    "If the cost of a control by this plugin exceeds the rework it can prevent, that control must remain inactive.",
     "Prefer end-to-end product progress over local subsystem perfection.",
     "Do not let local subsystems consume the main product goal.",
     "Do not let edge cases redefine the core product.",
@@ -765,26 +766,22 @@ product work.
 
 ## Supreme Rule
 
-Every Agent action, and every supervisory intervention made by this plugin,
-must be justified by expected net execution benefit: verified progress, necessary information gain,
-reduced rework, or a protected irreversible boundary. Keep the background layer
-quiet and call an explicit capability only when its likely saved rework exceeds
-its process cost. Bounded exploration is valid when it has a clear question,
-scope, and stop condition.
+Every action taken by the model and every supervisory intervention by this
+plugin must produce net execution benefit. Any action that may affect other
+modules without constraint or become noise for the entire project must be
+managed. If the cost of a control by this plugin exceeds the rework it can
+prevent, that control must remain inactive.
 """
 
 MDCP_PROTOCOL_MD = """# Multi-Dimensional Collaboration Protocol For Goal Compass
 
 MDCP is used here as a cross-layer rule library, not as a new workflow.
 
-Supreme rule: every Agent action, and every supervisory intervention made by
-this plugin, must be justified by expected net execution benefit: verified progress, necessary
-information gain, reduced rework, or a protected irreversible boundary. An
-uncontracted cross-module effect, repeated disproven work, or an action that has
-become part of the noise is an intervention signal. Skip, simplify, or serialize
-any control whose coordination cost exceeds the rework or risk it can prevent.
-Bounded exploration remains valid when it has a clear question, scope, and stop
-condition.
+Supreme rule: every action taken by the model and every supervisory intervention
+by this plugin must produce net execution benefit. Any action that may affect
+other modules without constraint or become noise for the entire project must be
+managed. If the cost of a control by this plugin exceeds the rework it can
+prevent, that control must remain inactive.
 
 Source reference:
 https://github.com/HanShengrunning/-multi-dimensional-collaboration-protocol

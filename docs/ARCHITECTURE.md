@@ -13,7 +13,7 @@ The system keeps four concerns separate:
 
 The user and the execution Agent remain the decision makers. Goal Supervisor is the project-scoped administrative layer.
 
-The governing invariant applies equally to execution and administration: every Agent action, and every supervisory intervention made by this plugin, must be justified by expected net execution benefit. An action may provide verified progress, necessary bounded information gain, reduced rework, or protection at an irreversible boundary. Cross-module work is reviewed when its dependencies, shared contracts, or regression path are unclear. A control remains inactive when its likely process cost exceeds the rework it can prevent.
+Every action taken by the model and every supervisory intervention by this plugin must produce net execution benefit. Any action that may affect other modules without constraint or become noise for the entire project must be managed. If the cost of a control by this plugin exceeds the rework it can prevent, that control must remain inactive.
 
 ## Problem Model
 
