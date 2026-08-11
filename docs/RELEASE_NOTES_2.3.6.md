@@ -4,7 +4,9 @@
 
 Coding Agents are entering the Loop Era: they can work for hours, traverse large repositories, call tools, delegate work, survive context compaction, and iterate beyond a single conversation turn. The hard problem is no longer only generating a good next step. It is keeping thousands of locally reasonable steps aligned with one valuable outcome.
 
-Long loops fail in recognizable ways. A temporary request can replace the real objective after compaction. Activity can grow while acceptance evidence stays flat. An Agent can repeat a failed path, optimize beyond completion, or produce structurally valid output that does not satisfy the product. A heavy supervisor can make the opposite mistake and consume more time than the rework it prevents.
+Long loops fail in recognizable ways. A large objective may never become an executable definition with stages, dependencies, outputs, and a finish line. An Agent may build architecture, security, permissions, future extensibility, or custom infrastructure before proving the smallest business loop or checking what can be reused. A temporary request can replace the real objective after compaction. Activity can grow while acceptance evidence stays flat. Failed approaches can be repeated because their conclusions were not retained. Locally relevant work can stop advancing the active milestone. Files, builds, or artifacts can exist without proving the product is usable. Large reads can exhaust context before conclusions are sealed, and parallel specialists can create duplicate work instead of throughput.
+
+The opposite failure also matters: a control system can consume more time, context, and coordination than the rework it prevents. The project therefore treats business feasibility, evidence-backed progress, recovery, and low-cost intervention as one design problem. Real end-to-end capability comes first; only the minimum effective boundary is allowed to precede it, with broader architecture and hardening added after the loop is proven.
 
 Codex Goal Supervisor exists to solve that convergence problem.
 
