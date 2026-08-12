@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 import os
@@ -47,6 +48,7 @@ def run_command(
     cwd: Path = PLUGIN_ROOT,
     timeout: float = COMMAND_TIMEOUT,
     check: bool = True,
+    env_overrides: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     kwargs: dict[str, Any] = {
         "cwd": cwd,
@@ -56,7 +58,12 @@ def run_command(
         "stdout": subprocess.PIPE,
         "stderr": subprocess.PIPE,
         "stdin": subprocess.DEVNULL,
-        "env": {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONUTF8": "1"},
+        "env": {
+            **os.environ,
+            **(env_overrides or {}),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONUTF8": "1",
+        },
     }
     if os.name != "nt":
         kwargs["start_new_session"] = True
@@ -85,6 +92,39 @@ def run_command(
     return result
 
 
+@functools.lru_cache(maxsize=1)
+def system_proxy_environment() -> dict[str, str]:
+    """Bridge the active macOS proxy into CLI network commands when needed."""
+    proxy_keys = ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy")
+    if any(os.environ.get(key) for key in proxy_keys) or sys.platform != "darwin":
+        return {}
+    try:
+        result = subprocess.run(
+            ["scutil", "--proxy"],
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            timeout=3,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return {}
+    values = {
+        key: value.strip()
+        for key, value in re.findall(r"^\s*([A-Za-z]+)\s*:\s*(.+?)\s*$", result.stdout, re.MULTILINE)
+    }
+    host = values.get("HTTPSProxy") or values.get("HTTPProxy")
+    port = values.get("HTTPSPort") or values.get("HTTPPort")
+    enabled = values.get("HTTPSEnable") == "1" or values.get("HTTPEnable") == "1"
+    if not enabled or not host or not port or not port.isdigit():
+        return {}
+    proxy = f"http://{host}:{port}"
+    return {"HTTPS_PROXY": proxy, "HTTP_PROXY": proxy, "https_proxy": proxy, "http_proxy": proxy}
+
+
 def run_network_command(
     command: Sequence[str],
     *,
@@ -97,7 +137,13 @@ def run_network_command(
     last: subprocess.CompletedProcess[str] | None = None
     for attempt in range(attempts):
         try:
-            last = run_command(command, cwd=cwd, timeout=timeout, check=False)
+            last = run_command(
+                command,
+                cwd=cwd,
+                timeout=timeout,
+                check=False,
+                env_overrides=system_proxy_environment(),
+            )
         except PublishError:
             if attempt + 1 >= attempts:
                 raise

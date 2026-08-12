@@ -51,6 +51,20 @@ class ReleasePublishTests(unittest.TestCase):
             result = PUBLISHER.run_network_command(["gh", "release", "view"], attempts=2, check=False)
         self.assertEqual(result.returncode, 1)
 
+    def test_macos_system_proxy_is_used_only_without_explicit_proxy_env(self) -> None:
+        payload = "HTTPEnable : 1\nHTTPProxy : 127.0.0.1\nHTTPPort : 7897\n"
+        completed = subprocess.CompletedProcess([], 0, payload, "")
+        PUBLISHER.system_proxy_environment.cache_clear()
+        with mock.patch.object(PUBLISHER.sys, "platform", "darwin"), mock.patch.dict(PUBLISHER.os.environ, {}, clear=True), mock.patch.object(PUBLISHER.subprocess, "run", return_value=completed):
+            self.assertEqual(
+                PUBLISHER.system_proxy_environment()["HTTPS_PROXY"],
+                "http://127.0.0.1:7897",
+            )
+        PUBLISHER.system_proxy_environment.cache_clear()
+        with mock.patch.object(PUBLISHER.sys, "platform", "darwin"), mock.patch.dict(PUBLISHER.os.environ, {"HTTPS_PROXY": "http://explicit:8080"}, clear=True):
+            self.assertEqual(PUBLISHER.system_proxy_environment(), {})
+        PUBLISHER.system_proxy_environment.cache_clear()
+
     def make_archive(self, path: Path, *, version: str, edition: str) -> None:
         manifest = {
             "name": "codex-goal-supervisor",
