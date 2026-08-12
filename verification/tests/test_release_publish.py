@@ -37,6 +37,20 @@ class ReleasePublishTests(unittest.TestCase):
         self.assertTrue(PUBLISHER.tag_resolves_to_head(output, "source-head"))
         self.assertFalse(PUBLISHER.tag_resolves_to_head(output, "other-head"))
 
+    def test_network_command_retries_transient_failure(self) -> None:
+        failed = subprocess.CompletedProcess([], 128, "", "HTTP2 framing error")
+        passed = subprocess.CompletedProcess([], 0, "ok", "")
+        with mock.patch.object(PUBLISHER, "run_command", side_effect=[failed, passed]) as command, mock.patch.object(PUBLISHER.time, "sleep"):
+            result = PUBLISHER.run_network_command(["git", "fetch"], attempts=2)
+        self.assertEqual(result.stdout, "ok")
+        self.assertEqual(command.call_count, 2)
+
+    def test_network_query_can_return_expected_not_found(self) -> None:
+        missing = subprocess.CompletedProcess([], 1, "", "release not found")
+        with mock.patch.object(PUBLISHER, "run_command", return_value=missing), mock.patch.object(PUBLISHER.time, "sleep"):
+            result = PUBLISHER.run_network_command(["gh", "release", "view"], attempts=2, check=False)
+        self.assertEqual(result.returncode, 1)
+
     def make_archive(self, path: Path, *, version: str, edition: str) -> None:
         manifest = {
             "name": "codex-goal-supervisor",

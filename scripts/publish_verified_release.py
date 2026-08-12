@@ -12,6 +12,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 from pathlib import Path
 from typing import Any, Sequence
@@ -82,6 +83,37 @@ def run_command(
             f"stdout:\n{stdout[-4000:]}\nstderr:\n{stderr[-4000:]}"
         )
     return result
+
+
+def run_network_command(
+    command: Sequence[str],
+    *,
+    cwd: Path = PLUGIN_ROOT,
+    timeout: float = COMMAND_TIMEOUT,
+    attempts: int = 3,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    """Retry bounded network operations without weakening verification."""
+    last: subprocess.CompletedProcess[str] | None = None
+    for attempt in range(attempts):
+        try:
+            last = run_command(command, cwd=cwd, timeout=timeout, check=False)
+        except PublishError:
+            if attempt + 1 >= attempts:
+                raise
+            time.sleep(attempt + 1)
+            continue
+        if last.returncode == 0:
+            return last
+        if attempt + 1 < attempts:
+            time.sleep(attempt + 1)
+    assert last is not None
+    if not check:
+        return last
+    raise PublishError(
+        f"Network command failed after {attempts} attempts ({last.returncode}): {' '.join(command)}\n"
+        f"stdout:\n{last.stdout[-4000:]}\nstderr:\n{last.stderr[-4000:]}"
+    )
 
 
 def manifest() -> dict[str, Any]:
@@ -237,7 +269,7 @@ def build_marketplace_tree(edition: str, destination: Path) -> None:
 def sync_marketplace(url: str, edition: str, built_tree: Path, version: str) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"goal-supervisor-publish-{edition}-") as temporary:
         checkout = Path(temporary) / "checkout"
-        run_command(["git", "clone", "--quiet", url, str(checkout)], timeout=SUITE_TIMEOUT)
+        run_network_command(["git", "-c", "http.version=HTTP/1.1", "clone", "--quiet", url, str(checkout)], timeout=SUITE_TIMEOUT)
         copy_tree_contents(built_tree, checkout)
         run_command(["git", "add", "--all"], cwd=checkout)
         changed = run_command(["git", "diff", "--cached", "--quiet"], cwd=checkout, check=False).returncode != 0
@@ -247,7 +279,7 @@ def sync_marketplace(url: str, edition: str, built_tree: Path, version: str) -> 
                 "-c", "user.email=release@users.noreply.github.com",
                 "commit", "-m", f"release: publish Codex Goal Supervisor {version}",
             ], cwd=checkout)
-            run_command(["git", "push", "origin", "HEAD:main"], cwd=checkout, timeout=SUITE_TIMEOUT)
+            run_network_command(["git", "-c", "http.version=HTTP/1.1", "push", "origin", "HEAD:main"], cwd=checkout, timeout=SUITE_TIMEOUT)
         payload = json.loads((checkout / "plugins/codex-goal-supervisor/.codex-plugin/plugin.json").read_text(encoding="utf-8"))
         if payload.get("version") != version or payload.get("distributionEdition") != edition:
             raise PublishError(f"Published {edition} marketplace tree failed local identity verification.")
@@ -266,7 +298,7 @@ def publish_github_release(identity: dict[str, str], assets: list[Path], head: s
             raise PublishError(f"Release {identity['tag']} has conflicting asset digests: {', '.join(mismatch)}")
         return sorted(actual)
 
-    existing = run_command(
+    existing = run_network_command(
         ["gh", "release", "view", identity["tag"], "--repo", CANONICAL_REPOSITORY, "--json", "tagName,assets,url"],
         check=False,
     )
@@ -281,8 +313,8 @@ def publish_github_release(identity: dict[str, str], assets: list[Path], head: s
         "--notes-file", identity["notes"],
         *[str(path) for path in assets],
     ]
-    created = run_command(command, timeout=SUITE_TIMEOUT).stdout.strip()
-    verified = run_command([
+    created = run_network_command(command, timeout=SUITE_TIMEOUT).stdout.strip()
+    verified = run_network_command([
         "gh", "release", "view", identity["tag"], "--repo", CANONICAL_REPOSITORY,
         "--json", "tagName,assets,url",
     ])
@@ -293,7 +325,9 @@ def publish_github_release(identity: dict[str, str], assets: list[Path], head: s
 def verify_remote_marketplace(url: str, edition: str, version: str) -> dict[str, str]:
     with tempfile.TemporaryDirectory(prefix=f"goal-supervisor-remote-{edition}-") as temporary:
         checkout = Path(temporary) / "checkout"
-        run_command(["git", "clone", "--quiet", "--depth", "1", url, str(checkout)], timeout=SUITE_TIMEOUT)
+        run_network_command([
+            "git", "-c", "http.version=HTTP/1.1", "clone", "--quiet", "--depth", "1", url, str(checkout),
+        ], timeout=SUITE_TIMEOUT)
         payload = json.loads((checkout / "plugins/codex-goal-supervisor/.codex-plugin/plugin.json").read_text(encoding="utf-8"))
         if payload.get("version") != version or payload.get("distributionEdition") != edition:
             raise PublishError(f"Remote {edition} marketplace does not expose {version}.")
@@ -317,16 +351,16 @@ def publish(*, dry_run: bool = False) -> dict[str, Any]:
             "extracted_verification": extracted_tests,
         }
 
-    run_command(["git", "fetch", "origin", "main"], timeout=SUITE_TIMEOUT)
+    run_network_command(["git", "-c", "http.version=HTTP/1.1", "fetch", "origin", "main"], timeout=SUITE_TIMEOUT)
     ancestor = run_command(["git", "merge-base", "--is-ancestor", "origin/main", "HEAD"], check=False)
     if ancestor.returncode != 0:
         raise PublishError("Local main does not contain origin/main; integrate the remote before publishing.")
-    run_command(["git", "push", "origin", "HEAD:main"], timeout=SUITE_TIMEOUT)
+    run_network_command(["git", "-c", "http.version=HTTP/1.1", "push", "origin", "HEAD:main"], timeout=SUITE_TIMEOUT)
     head = run_command(["git", "rev-parse", "HEAD"]).stdout.strip()
 
     assets = [archives[edition] for edition in ("offline", "update-only", "full")] + [checksums]
     release = publish_github_release(identity, assets, head)
-    remote_tag = run_command([
+    remote_tag = run_network_command([
         "git",
         "ls-remote",
         "origin",
