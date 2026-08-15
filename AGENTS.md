@@ -12,3 +12,4 @@
 - Do not coach the black-box task with expected internal behavior or test answers. Give it the product goal, require plugin use, and observe its actual behavior.
 - Use a fresh isolated project directory for every black-box scenario so repository state and product artifacts do not leak between runs.
 - A release is not complete until deterministic regression, extracted-package verification, and this real-task black-box validation all pass or any remaining failure is reported explicitly.
+- Publication is strictly last: the exact clean candidate commit must pass the real Luna Max black box and independent product acceptance before any repository, marketplace, release, or update channel is written.

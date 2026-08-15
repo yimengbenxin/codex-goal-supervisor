@@ -296,8 +296,13 @@ both edition-pinned marketplaces, and GitHub Release in one verified step:
 python3 scripts/publish_verified_release.py
 ```
 
-The publisher refuses dirty or unverified source and performs remote read-back
-verification. A local version is not release-complete until this command reports
+Before this command may start, the exact clean release commit must pass the real
+Luna Max `插件专用测试线程` black box. Its machine attestation must prove that the
+detailed plugin Goal was finalized before native Goal creation, the two
+objectives match exactly, online reuse research ran, and independent product
+acceptance passed. The publisher refuses missing, stale, or mismatched evidence,
+then verifies source and extracted ZIPs before its first network write. A local
+version is not release-complete until this command reports
 `PUBLISHED_AND_VERIFIED`.
 
 The update host is configurable. Re-run setup with
