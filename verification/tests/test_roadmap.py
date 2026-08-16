@@ -83,6 +83,20 @@ class RoadmapTests(GoalCompassRepoCase):
         completed = self.json_run("roadmap", "--snapshot")
         self.assertEqual([node["status"] for node in completed["nodes"]], ["COMPLETED", "READY"])
 
+    def test_roadmap_normalizes_dependency_description_with_exact_node_prefix(self) -> None:
+        definition = detailed_goal_definition()
+        definition["process"]["nodes"][1]["dependencies"] = ["N1 的已验证产出"]
+        self.set_detailed_goal(definition)
+
+        initial = self.json_run("roadmap", "--snapshot")
+        self.assertEqual(initial["nodes"][1]["dependencies"], ["N1"])
+        self.assertEqual(initial["edges"], [{"from": "N1", "to": "N2", "kind": "dependency"}])
+
+        self.json_run("convergence", "--start-segment", "N1")
+        self.json_run("convergence", "--complete-segment", "N1", "--evidence-id", "node-one-pass")
+        completed = self.json_run("roadmap", "--snapshot")
+        self.assertEqual(completed["nodes"][1]["status"], "READY")
+
     def test_optional_subnodes_are_not_required(self) -> None:
         result = self.set_detailed_goal()
         snapshot = self.json_run("roadmap", "--snapshot")

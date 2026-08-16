@@ -156,6 +156,14 @@ The plugin has two layers:
 
 North Star setup is not part of the silent observer. When the user explicitly activates Codex Goal Supervisor for a substantive task, the AI first establishes or reuses the concise project-owned North Star and its detailed executable contract, then starts native Codex Goal mode with the exact `goal_mode_objective` returned by `goal-set --require-detailed`. It verifies the native objective with `get_goal` before implementation; a rough request or concise North Star is never a substitute. The Goal-mode contract is 2,000-3,500 characters. It includes module-level hour targets and the actionable open-source reuse route produced by current research. Super-complex work also references a project plan longer than 4,000 characters while keeping the compressed contract in Goal mode. Unrelated tasks are never auto-enrolled.
 
+When a super-complex project cannot converge inside one useful Goal, the plugin
+supports a shallow program outline and one detailed current phase at a time.
+Each phase represents a dependency-aware 2-24 hour business outcome, repeats
+current reuse research, declares machine validation, and projects its exact
+2,000-3,500 character objective into native Goal mode. A phase must pass before
+the next dependency-ready phase is projected. Small work is never inflated into
+a phase merely because this capability exists.
+
 ## Intervention Policy
 
 | Situation | Supervisor behavior |

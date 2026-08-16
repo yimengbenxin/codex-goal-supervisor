@@ -79,6 +79,58 @@ class ConvergenceStateTests(GoalCompassRepoCase):
         _, later = due_segment_reminder(state, observed_at="2026-08-15T00:00:00+00:00")
         self.assertIsNone(later)
 
+    def test_descriptive_dependency_with_exact_node_prefix_uses_completed_node(self) -> None:
+        state = empty_state()
+        state["goal_stack"]["goal_contract"]["modules"] = [
+            {
+                "node_id": "DOMAIN",
+                "name": "Domain rules",
+                "dependencies": [],
+                "timebox_hours": 1,
+            },
+            {
+                "node_id": "LOOPBACK_E2E",
+                "name": "Loopback lifecycle",
+                "dependencies": ["DOMAIN 的领域结果和错误契约"],
+                "timebox_hours": 1,
+            },
+        ]
+        state, _ = start_segment(
+            state,
+            node_id="DOMAIN",
+            observed_at="2026-08-14T00:00:00+00:00",
+        )
+        state, _ = complete_segment(
+            state,
+            node_id="DOMAIN",
+            observed_at="2026-08-14T00:30:00+00:00",
+            evidence_ids=["domain-rules-pass"],
+        )
+
+        state, started = start_segment(
+            state,
+            node_id="LOOPBACK_E2E",
+            observed_at="2026-08-14T00:31:00+00:00",
+        )
+
+        self.assertEqual(started["node_id"], "LOOPBACK_E2E")
+
+    def test_unmapped_descriptive_dependency_remains_blocked(self) -> None:
+        state = empty_state()
+        state["goal_stack"]["goal_contract"]["modules"] = [{
+            "node_id": "LOOPBACK_E2E",
+            "name": "Loopback lifecycle",
+            "dependencies": ["domain results and error contract"],
+            "timebox_hours": 1,
+        }]
+
+        with self.assertRaisesRegex(ValueError, "segment dependencies are not complete"):
+            start_segment(
+                state,
+                node_id="LOOPBACK_E2E",
+                observed_at="2026-08-14T00:31:00+00:00",
+            )
+
     def test_long_segment_uses_goal_selected_reminder_cadence(self) -> None:
         state = empty_state()
         state["goal_stack"]["goal_contract"]["modules"] = [{
