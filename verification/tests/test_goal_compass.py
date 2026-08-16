@@ -33,6 +33,7 @@ TEST_MODULES = [
     "verification.tests.test_context_continuity",
     "verification.tests.test_goal_return",
     "verification.tests.test_phased_goal",
+    "verification.tests.test_native_goal_bridge",
     "verification.tests.test_deviation_incidents",
     "verification.tests.test_route_incidents",
     "verification.tests.test_agency_role_pack",
