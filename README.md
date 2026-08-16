@@ -166,7 +166,9 @@ a phase merely because this capability exists.
 
 The phase definition is one self-contained JSON contract: top-level phase ID,
 estimate, dependencies, validation IDs and phase research, plus one complete
-structured `goal_definition`. No preparatory detailed `goal-set` is required.
+structured `goal_definition` and, when needed, an authored 2,000-3,500
+character `goal_mode_objective` compression. The plugin never truncates the
+full definition. No preparatory detailed `goal-set` is required.
 Installed projects include the exact canonical JSON shape in
 `.agent/docs/README_GOAL_COMPASS.md`; invalid contracts return that reference
 instead of forcing the Agent to infer nesting from repeated failures.

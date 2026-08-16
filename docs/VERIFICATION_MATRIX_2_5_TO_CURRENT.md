@@ -1,6 +1,6 @@
 # Business Verification Matrix: 2.5 To Current Candidate
 
-Candidate under test: `2.8.4+codex.20260816090544`
+Candidate under test: `2.8.5+codex.20260816092517`
 
 Release publication is frozen. A row is complete only when its required
 deterministic, distribution, and real-thread evidence has passed. Existing test
@@ -32,6 +32,10 @@ counts and earlier black-box runs are context, not proof for this campaign.
 | 2.8 | Procedure noise/privacy boundary | deterministic + distribution + real-thread | Reads, failed commands, sensitive values, temporary paths, arbitrary shell and destructive operations are not persisted or injected; feedback remains local-only. | PASS |
 | 2.8.1 | Canonical native Goal synchronization | deterministic + real-thread | Research and detailed Goal finalize first; `create_goal` receives the exact `goal_mode_objective`; `get_goal` matches its length, bytes and SHA-256. An early short Goal is rejected as unsynchronized. | PASS |
 | 2.8.2 | Black-box-before-release contract | deterministic + distribution | A real Luna Max attestation is bound to the exact clean commit/version and independent product pass; missing, stale, mismatched, early-Goal, or no-research evidence prevents publication. | PASS |
+| 2.8.3 | Structured phased Goal runtime | deterministic + real-thread | A concise North Star anchors a shallow program outline; only the dependency-ready 2-24 hour phase is detailed and projected into native Goal mode; phase completion validates before advance. | SOURCE PASS / REAL-THREAD PENDING |
+| 2.8.4 | Directly usable phase input contract | deterministic + real-thread | The installed Skill and project README expose one canonical input shape plus bounded aliases, so an execution agent can author and submit a phase without reading verification tests or schema-guess retries. | SOURCE PASS / REAL-THREAD PENDING |
+| 2.8.5 | Full definition and native Goal projection separation | deterministic + real-thread | A complete structured phase may provide a separately authored 2,000-3,500 character native Goal projection; the full definition is never truncated and the projection cannot conceal missing structure. | SOURCE PASS / REAL-THREAD PENDING |
+| 2.8.5 | Roadmap token argument stability | deterministic | A generated URL-safe shutdown token beginning with `-` still starts the loopback dashboard and cannot be parsed as a new CLI option. | PASS |
 | current | Existing core regressions | deterministic + distribution | Goal detection, advisory mode, deviation recurrence, validation states, Janitor mark-only behavior, feedback local default, updater boundary, concurrency and status performance remain green. | PASS |
 
 ## Deterministic Commands
@@ -72,11 +76,17 @@ runtime feature flags alone. The dry run must perform no network write.
 ## Exit Rule
 
 All rows must be `PASS`, every confirmed defect must have a regression test, and
-the final source/extracted/edition/real-thread rerun must be green before phased
-Goal implementation starts. Publication remains a later, separate decision.
+the final source/extracted/edition/real-thread rerun must be green before the
+candidate can be called stable. Publication remains a later, separate decision.
 
 ## Signed Evidence
 
+- Current 2.8.5 source candidate: module `530 tests / 90.182s`, discovery
+  `530 tests / 93.651s`, selftest `OK`; `py_compile` also passed.
+- The complete discovery suite exposed an intermittent roadmap startup failure.
+  Root cause was a generated shutdown token beginning with `-` being passed as a
+  separate argparse value. The fix uses `--token=<value>` and a deterministic
+  leading-hyphen regression test.
 - Source suite after the final hook repairs: `517 tests`, `92.535s`, `OK`.
 - Extracted full-edition suite before the two isolated hook repairs: module
   `515 tests / 90.416s`, discovery `515 tests / 88.944s`, selftest `OK`.

@@ -50,6 +50,7 @@ The phase file uses these canonical top-level fields:
   "estimated_hours": 4,
   "dependencies": [],
   "validation_ids": ["catalog_validation_id"],
+  "goal_mode_objective": "authored 2,000-3,500 character current-phase contract",
   "planning_research": {
     "completed": true,
     "researched_at": "ISO-8601 timestamp",
@@ -109,8 +110,11 @@ The phase file uses these canonical top-level fields:
 }
 ```
 
-Use at least two first principles and two process nodes. The rendered current
-phase Goal must be 2,000-3,500 characters. `phase-set` does not require a prior
+Use at least two first principles and two process nodes. Supply an authored
+2,000-3,500 character `goal_mode_objective` when the complete structured
+definition would render beyond the native Goal limit. The plugin validates the
+complete definition separately and never truncates it. A long objective cannot
+compensate for missing structured fields. `phase-set` does not require a prior
 detailed `goal-set`; it validates this file, stores the phase projection, and
 returns the exact native Goal objective. Compatibility aliases such as
 `detailed_goal_definition`, `validation_catalog_ids`, `id`, `timebox_hours`,

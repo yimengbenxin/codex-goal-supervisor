@@ -308,8 +308,7 @@ def ensure_server(project_root: Path, *, wait_seconds: float = 2.5) -> dict[str,
         "--serve",
         "--project-root",
         str(root),
-        "--token",
-        token,
+        f"--token={token}",
     ]
     kwargs: dict[str, Any] = {
         "cwd": str(root),

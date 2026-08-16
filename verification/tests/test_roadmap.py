@@ -5,6 +5,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+from unittest import mock
 
 try:
     from .helpers import HARNESS_ROOT, GoalCompassRepoCase
@@ -137,6 +138,20 @@ class RoadmapTests(GoalCompassRepoCase):
                 html = response.read().decode("utf-8")
             self.assertIn("Goal 技术路线", html)
             self.assertIn("仅在用户需要时细化", html)
+        finally:
+            self.cli("roadmap", "--stop", check=False)
+            if old is None:
+                os.environ["GOAL_SUPERVISOR_DISABLE_ROADMAP_SERVER"] = "1"
+            else:
+                os.environ["GOAL_SUPERVISOR_DISABLE_ROADMAP_SERVER"] = old
+
+    def test_live_server_accepts_generated_token_with_leading_hyphen(self) -> None:
+        old = os.environ.pop("GOAL_SUPERVISOR_DISABLE_ROADMAP_SERVER", None)
+        try:
+            with mock.patch("goal_compass_runtime.roadmap.secrets.token_urlsafe", return_value="-leading-token"):
+                result = self.set_detailed_goal()
+            self.assertEqual(result["roadmap"]["status"], "RUNNING")
+            self.assertTrue(result["roadmap"]["url"].startswith("http://127.0.0.1:"))
         finally:
             self.cli("roadmap", "--stop", check=False)
             if old is None:

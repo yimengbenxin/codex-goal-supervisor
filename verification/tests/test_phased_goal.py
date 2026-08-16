@@ -174,6 +174,42 @@ class PhasedGoalTests(GoalCompassRepoCase):
             ".agent/docs/README_GOAL_COMPASS.md#structured-phased-goal-input",
         )
 
+    def test_authored_phase_goal_compresses_complete_definition_without_truncation(self) -> None:
+        phase = self.phase("P1", "phase_one_pass")
+        phase["goal_definition"]["precise_goal"] += " Preserve the complete structured execution contract." * 80
+        authored = ("目标：完成当前 mock video artifact phase，并保持模块、输入输出、依赖、验收与复用决定可执行。" * 80)[:2400]
+        phase["goal_mode_objective"] = authored
+        self.write_contracts(phase)
+
+        result = self.json_run(
+            "phase-set",
+            "--outline-file", "program-outline.json",
+            "--definition-file", "phase.json",
+        )
+
+        self.assertEqual(result["goal_mode_objective"], authored)
+        self.assertEqual(result["native_goal_sync"]["objective_chars"], len(authored))
+        self.assertEqual(
+            self.read_json(".agent/program_phase.json")["current_phase"]["goal_definition"]["quality"],
+            "STRUCTURED_DETAILED",
+        )
+
+    def test_long_authored_phase_goal_cannot_replace_missing_structure(self) -> None:
+        phase = self.phase("P1", "phase_one_pass")
+        phase["goal_definition"] = {"precise_goal": "A long objective is not a structured phase contract."}
+        phase["goal_mode_objective"] = ("目标正文不能替代结构化字段。" * 200)[:2200]
+        self.write_contracts(phase)
+
+        result = self.json_run(
+            "phase-set",
+            "--outline-file", "program-outline.json",
+            "--definition-file", "phase.json",
+            check=False,
+        )
+
+        self.assertFalse(result["ok"])
+        self.assertIn("phase goal_definition must be STRUCTURED_DETAILED", result["errors"])
+
     def test_phase_estimate_must_be_between_two_and_twenty_four_hours(self) -> None:
         for hours in (1, 25):
             outline = self.outline()

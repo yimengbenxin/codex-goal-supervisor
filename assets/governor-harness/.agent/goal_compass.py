@@ -7524,7 +7524,25 @@ def structured_phase_contract(
         raw["validation_ids"] = raw["validation_catalog_ids"]
     goal = confirmed_goal() or ""
     definition = goal_definition_from_payload(goal, raw)
-    objective = render_goal_mode_objective(definition)
+    explicit_objective = next((
+        str(wrapper.get("goal_mode_objective") or "").strip()
+        for wrapper in wrappers
+        if str(wrapper.get("goal_mode_objective") or "").strip()
+    ), "")
+    objective = explicit_objective or render_goal_mode_objective(definition)
+    missing_fields = list(definition.get("missing_fields") or [])
+    length_error = f"goal_mode_objective_chars={GOAL_MODE_OBJECTIVE_MIN_CHARS}..{GOAL_MODE_OBJECTIVE_MAX_CHARS}"
+    structural_missing = [field for field in missing_fields if field != length_error]
+    if (
+        explicit_objective
+        and GOAL_MODE_OBJECTIVE_MIN_CHARS <= len(explicit_objective) <= GOAL_MODE_OBJECTIVE_MAX_CHARS
+        and not structural_missing
+    ):
+        definition["quality"] = "STRUCTURED_DETAILED"
+        definition["missing_fields"] = []
+        metrics = dict(definition.get("detail_metrics") or {})
+        metrics["goal_mode_objective_chars"] = len(explicit_objective)
+        definition["detail_metrics"] = metrics
     phase, errors = validate_structured_phase(raw, outline, definition, objective, completed_phase_ids)
     unknown = [command_id for command_id in phase.get("validation_ids", []) if command_id not in catalog()]
     if unknown:
