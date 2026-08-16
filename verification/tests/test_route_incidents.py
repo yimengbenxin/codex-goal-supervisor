@@ -4,13 +4,14 @@ import contextlib
 import io
 import json
 import os
+import sys
 import unittest
 from unittest import mock
 
 try:
-    from .helpers import GOAL_COMPASS, GoalCompassRepoCase, pushd
+    from .helpers import GOAL_COMPASS, GoalCompassRepoCase, pushd, run_cmd
 except ImportError:
-    from helpers import GOAL_COMPASS, GoalCompassRepoCase, pushd
+    from helpers import GOAL_COMPASS, GoalCompassRepoCase, pushd, run_cmd
 
 from goal_compass_runtime.observer import empty_state
 from goal_compass_runtime.route_incidents import build_context, process_observation
@@ -287,6 +288,29 @@ class RouteIncidentHookTests(GoalCompassRepoCase):
         self.assertIn("source requirements", output)
         self.assertIn("research current external tools", output)
         self.assertNotIn("permissionDecision", output)
+
+    def test_project_hook_infers_post_event_and_accepts_common_result_wrappers(self) -> None:
+        outputs: list[str] = []
+        wrappers = ("tool_output", "tool_result", "result")
+        for index, wrapper in enumerate(wrappers):
+            event = {
+                "tool_name": "exec_command",
+                "tool_input": {"cmd": "run-field-route --retry"},
+                wrapper: {"exit-code": 127, "stderr": "missing required platform tool"},
+                "tool_use_id": f"route-project-hook-{index}",
+            }
+            completed = run_cmd(
+                [sys.executable, ".agent/goal_compass_runtime/project_hook.py"],
+                cwd=self.root,
+                input_text=json.dumps(event),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            outputs.append(completed.stdout)
+        self.assertEqual(outputs[0].strip(), "")
+        self.assertIn("Technical route reassessment required", outputs[-1])
+        state = self.read_json(".agent/runtime/observer_state.json")
+        incident = next(iter(state["route_incidents"].values()))
+        self.assertEqual(incident["cause_family"], "DEPENDENCY_OR_TOOL_MISSING")
 
     def test_route_warning_does_not_invoke_llm_judge(self) -> None:
         old = os.environ.pop("GOAL_SUPERVISOR_DISABLE_LLM_JUDGE", None)

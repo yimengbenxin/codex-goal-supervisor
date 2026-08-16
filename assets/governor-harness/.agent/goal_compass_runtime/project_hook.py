@@ -138,7 +138,18 @@ def match_path(path: str, patterns: list[str] | tuple[str, ...]) -> bool:
 
 
 def event_name(event: dict[str, Any]) -> str:
-    return str(event.get("hook_event_name") or event.get("hookEventName") or "")
+    explicit = str(event.get("hook_event_name") or event.get("hookEventName") or "")
+    if explicit:
+        return explicit
+    response_fields = (
+        "tool_response", "toolResponse", "tool_output", "toolOutput",
+        "tool_result", "toolResult", "output", "result", "error",
+    )
+    if any(key in event for key in response_fields):
+        return "PostToolUse"
+    if any(key in event for key in ("tool_input", "toolInput", "input")):
+        return "PreToolUse"
+    return ""
 
 
 def tool_input(event: dict[str, Any]) -> dict[str, Any]:

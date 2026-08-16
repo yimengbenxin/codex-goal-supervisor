@@ -41,7 +41,8 @@ CAUSE_PATTERNS: tuple[tuple[str, tuple[str, ...]], ...] = (
     )),
     ("DEPENDENCY_OR_TOOL_MISSING", (
         "command not found", "no such file or directory", "module not found", "modulenotfounderror",
-        "cannot find module", "not recognized as an internal", "找不到命令", "缺少依赖",
+        "cannot find module", "not recognized as an internal", "missing required tool",
+        "missing required platform tool", "required executable is unavailable", "找不到命令", "缺少依赖",
     )),
     ("BUILD_OR_COMPILE_FAILURE", (
         "compile error", "compilation failed", "build failed", "syntaxerror", "type error",
@@ -122,7 +123,12 @@ def _normalized_failure_text(text: str) -> str:
 
 
 def failure_cause(event: dict[str, Any]) -> tuple[str, str] | None:
-    response = event.get("tool_response") or event.get("toolResponse") or event.get("output") or event.get("error")
+    response = (
+        event.get("tool_response") or event.get("toolResponse")
+        or event.get("tool_output") or event.get("toolOutput")
+        or event.get("tool_result") or event.get("toolResult")
+        or event.get("output") or event.get("result") or event.get("error")
+    )
     text = _normalized_failure_text(_bounded_strings(response))
     for family, markers in CAUSE_PATTERNS:
         if any(marker in text for marker in markers):
