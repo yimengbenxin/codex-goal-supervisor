@@ -1,6 +1,6 @@
 # Business Verification Matrix: 2.5 To Current Candidate
 
-Candidate under test: `2.8.5+codex.20260816092517`
+Candidate under test: `2.8.6+codex.20260816111230`
 
 Release publication is frozen. A row is complete only when its required
 deterministic, distribution, and real-thread evidence has passed. Existing test
@@ -36,6 +36,9 @@ counts and earlier black-box runs are context, not proof for this campaign.
 | 2.8.4 | Directly usable phase input contract | deterministic + real-thread | The installed Skill and project README expose one canonical input shape plus bounded aliases, so an execution agent can author and submit a phase without reading verification tests or schema-guess retries. | SOURCE PASS / REAL-THREAD PENDING |
 | 2.8.5 | Full definition and native Goal projection separation | deterministic + real-thread | A complete structured phase may provide a separately authored 2,000-3,500 character native Goal projection; the full definition is never truncated and the projection cannot conceal missing structure. | SOURCE PASS / REAL-THREAD PENDING |
 | 2.8.5 | Roadmap token argument stability | deterministic | A generated URL-safe shutdown token beginning with `-` still starts the loopback dashboard and cannot be parsed as a new CLI option. | PASS |
+| 2.8.6 | Installed lightweight phase telemetry | deterministic + real-thread | A structured phase without an ACTIVE ticket records the first real product write and successful validation through the installed lightweight project hook; successful `phase-complete` also records its authoritative catalog evidence without fabricating a product action. | SOURCE PASS / REAL-THREAD PENDING |
+| 2.8.6 | Completed program-phase dependency projection | deterministic + real-thread | A current phase node may depend on a completed program phase ID; completed phase dependencies are satisfied while unknown non-node dependencies remain blocked. | SOURCE PASS / REAL-THREAD PENDING |
+| 2.8.6 | Plugin template isolation under an observed source checkout | deterministic | Events inside `assets/governor-harness` never fall back to the observed plugin repository parent or receive project reminders. | PASS |
 | current | Existing core regressions | deterministic + distribution | Goal detection, advisory mode, deviation recurrence, validation states, Janitor mark-only behavior, feedback local default, updater boundary, concurrency and status performance remain green. | PASS |
 
 ## Deterministic Commands

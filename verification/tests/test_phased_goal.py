@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import copy
+import json
+import sys
 
 try:
-    from .helpers import GOAL_COMPASS, GoalCompassRepoCase, pushd
+    from .helpers import GOAL_COMPASS, DEFAULT_TIMEOUT, GoalCompassRepoCase, pushd, run_cmd
     from .test_goal_detect import detailed_goal_definition
 except ImportError:
-    from helpers import GOAL_COMPASS, GoalCompassRepoCase, pushd
+    from helpers import GOAL_COMPASS, DEFAULT_TIMEOUT, GoalCompassRepoCase, pushd, run_cmd
     from test_goal_detect import detailed_goal_definition
 
 
@@ -311,6 +313,49 @@ class PhasedGoalTests(GoalCompassRepoCase):
         self.assertTrue(telemetry["first_product_action_at"])
         self.assertTrue(telemetry["first_valid_evidence_at"])
         self.assertTrue(telemetry["deadline_at"])
+
+    def test_lightweight_project_hook_records_structured_phase_telemetry_without_ticket(self) -> None:
+        self.start_structured_phase()
+        hook = self.root / ".agent" / "goal_compass_runtime" / "project_hook.py"
+        events = (
+            {
+                "hook_event_name": "PostToolUse",
+                "tool_use_id": "lightweight-phase-write",
+                "tool_name": "apply_patch",
+                "tool_input": {
+                    "patch": "*** Begin Patch\n*** Add File: src/video/mock/phase.ts\n+x\n*** End Patch"
+                },
+            },
+            {
+                "hook_event_name": "PostToolUse",
+                "tool_use_id": "lightweight-phase-validation",
+                "tool_name": "exec_command",
+                "tool_input": {"cmd": "python -m unittest verification.tests.test_phase"},
+                "tool_response": {"exit_code": 0},
+            },
+        )
+        for event in events:
+            run_cmd(
+                [sys.executable, str(hook)],
+                cwd=self.root,
+                timeout=DEFAULT_TIMEOUT,
+                check=True,
+                input_text=json.dumps(event),
+            )
+
+        telemetry = self.read_json(".agent/program_phase.json")["current_phase"]["telemetry"]
+        self.assertTrue(telemetry["first_product_action_at"])
+        self.assertTrue(telemetry["first_valid_evidence_at"])
+
+    def test_successful_phase_complete_records_first_valid_evidence(self) -> None:
+        self.start_structured_phase()
+
+        completed = self.json_run("phase-complete", "--reason", "Catalog validation passed")
+
+        self.assertTrue(completed["ok"])
+        telemetry = self.read_json(".agent/program_phase.json")["current_phase"]["telemetry"]
+        self.assertTrue(telemetry["first_valid_evidence_at"])
+        self.assertIsNone(telemetry["first_product_action_at"])
 
     def test_legacy_phase_commands_remain_compatible(self) -> None:
         set_result = self.json_run(

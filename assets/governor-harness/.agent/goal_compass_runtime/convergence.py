@@ -45,6 +45,7 @@ def empty_state() -> dict[str, Any]:
                 "current_state": None,
                 "desired_state": None,
                 "modules": [],
+                "completed_program_phases": [],
                 "module_count_total": 0,
                 "projection_truncated": False,
                 "deliverables": [],
@@ -175,10 +176,16 @@ def _module_dependencies(state: dict[str, Any], module: dict[str, Any]) -> list[
     modules = [row for row in contract.get("modules", []) if isinstance(row, dict)]
     node_ids = [str(row.get("node_id") or "").strip() for row in modules]
     node_ids = [value for value in node_ids if value]
+    completed_program_phases = {
+        str(value).strip().casefold()
+        for value in contract.get("completed_program_phases", [])
+        if str(value).strip()
+    }
     return [
         resolved
         for value in _strings(module.get("dependencies"))
         if (resolved := _dependency_node_id(value, node_ids))
+        and resolved.casefold() not in completed_program_phases
     ]
 
 
@@ -566,13 +573,19 @@ def build_goal_stack(
         elif _acceptance_criteria({}, active_ticket):
             expectation = "machine acceptance evidence"
     stage = str(active_phase.get("goal") or active_ticket.get("task_goal") or "").strip() or None
+    contract = goal_contract_projection(north_star)
+    contract["completed_program_phases"] = [
+        str(row.get("phase_id")).strip()
+        for row in phase.get("completed_phases", [])
+        if isinstance(row, dict) and str(row.get("phase_id") or "").strip()
+    ]
     return {
         "l0_final_goal": str(north_star.get("goal") or "").strip() or None,
         "l1_success_criteria": _acceptance_criteria(north_star, active_ticket),
         "l2_current_stage": stage,
         "l3_current_action": action,
         "l3_expected_evidence": expectation or None,
-        "goal_contract": goal_contract_projection(north_star),
+        "goal_contract": contract,
     }
 
 

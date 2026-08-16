@@ -269,6 +269,11 @@ def complete(state: dict[str, Any], observed_at: str, reason: str, validation: d
     started_at = str(telemetry.get("started_at") or observed_at)
     started = dt.datetime.fromisoformat(started_at.replace("Z", "+00:00"))
     completed = dt.datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
+    if (
+        not telemetry.get("first_valid_evidence_at")
+        and str(validation.get("status") or "").upper() in {"PASS", "PASSED", "OK"}
+    ):
+        telemetry["first_valid_evidence_at"] = observed_at
     telemetry.update({
         "completed_at": observed_at,
         "actual_hours": round(max(0.0, (completed - started).total_seconds() / 3600.0), 4),

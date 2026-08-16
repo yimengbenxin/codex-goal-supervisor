@@ -131,6 +131,26 @@ class ConvergenceStateTests(GoalCompassRepoCase):
                 observed_at="2026-08-14T00:31:00+00:00",
             )
 
+    def test_completed_program_phase_satisfies_current_node_dependency(self) -> None:
+        state = empty_state()
+        state["goal_stack"]["goal_contract"].update({
+            "completed_program_phases": ["P1"],
+            "modules": [{
+                "node_id": "P2-N1",
+                "name": "Phase two implementation",
+                "dependencies": ["P1"],
+                "timebox_hours": 2,
+            }],
+        })
+
+        state, started = start_segment(
+            state,
+            node_id="P2-N1",
+            observed_at="2026-08-14T01:00:00+00:00",
+        )
+
+        self.assertEqual(started["node_id"], "P2-N1")
+
     def test_long_segment_uses_goal_selected_reminder_cadence(self) -> None:
         state = empty_state()
         state["goal_stack"]["goal_contract"]["modules"] = [{
