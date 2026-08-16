@@ -1,6 +1,6 @@
 # Business Verification Matrix: 2.5 To Current Candidate
 
-Candidate under test: `2.8.3+codex.20260816082926`
+Candidate under test: `2.8.4+codex.20260816090544`
 
 Release publication is frozen. A row is complete only when its required
 deterministic, distribution, and real-thread evidence has passed. Existing test

@@ -7489,10 +7489,39 @@ def structured_phase_contract(
     completed_phase_ids: set[str],
 ) -> tuple[dict[str, Any], list[str]]:
     raw = dict(phase_payload)
-    raw_definition = raw.get("goal_definition") if isinstance(raw.get("goal_definition"), dict) else {}
+    wrappers = [
+        raw,
+        raw.get("phase_definition") if isinstance(raw.get("phase_definition"), dict) else {},
+        raw.get("phase") if isinstance(raw.get("phase"), dict) else {},
+    ]
+    candidates = [
+        wrapper.get(key)
+        for wrapper in wrappers
+        for key in ("goal_definition", "detailed_goal_definition")
+        if isinstance(wrapper.get(key), dict)
+    ]
+    definition_fields = {
+        "precise_goal", "problem_statement", "current_state", "desired_state",
+        "stakeholders", "source_requirements", "first_principles", "process",
+        "deliverables", "final_acceptance", "constraints", "non_goals",
+    }
+    raw_definition = max(
+        candidates,
+        key=lambda candidate: len(definition_fields.intersection(candidate)),
+        default={},
+    )
+    raw_definition = dict(raw_definition)
     if "planning_research" not in raw_definition and isinstance(raw.get("planning_research"), dict):
         raw_definition = {**raw_definition, "planning_research": raw["planning_research"]}
-        raw["goal_definition"] = raw_definition
+    raw["goal_definition"] = raw_definition
+    if not raw.get("phase_id") and raw.get("id"):
+        raw["phase_id"] = raw["id"]
+    if not raw.get("estimated_hours") and raw.get("timebox_hours"):
+        raw["estimated_hours"] = raw["timebox_hours"]
+    if not raw.get("dependencies") and isinstance(raw.get("depends_on"), list):
+        raw["dependencies"] = raw["depends_on"]
+    if not raw.get("validation_ids") and isinstance(raw.get("validation_catalog_ids"), list):
+        raw["validation_ids"] = raw["validation_catalog_ids"]
     goal = confirmed_goal() or ""
     definition = goal_definition_from_payload(goal, raw)
     objective = render_goal_mode_objective(definition)
@@ -7559,7 +7588,12 @@ def cmd_phase_set(args: argparse.Namespace) -> int:
         phase, phase_errors = structured_phase_contract(phase_payload, outline, set())
         errors.extend(phase_errors)
         if errors:
-            print(json.dumps({"ok": False, "status": "PHASE_CONTRACT_INCOMPLETE", "errors": errors}, ensure_ascii=False, indent=2))
+            print(json.dumps({
+                "ok": False,
+                "status": "PHASE_CONTRACT_INCOMPLETE",
+                "errors": errors,
+                "contract_reference": ".agent/docs/README_GOAL_COMPASS.md#structured-phased-goal-input",
+            }, ensure_ascii=False, indent=2))
             return 2
         observed_at = now()
         payload = activate_structured_phase(
@@ -7679,7 +7713,12 @@ def cmd_phase_advance(args: argparse.Namespace) -> int:
         outline = previous.get("program_outline") if isinstance(previous.get("program_outline"), dict) else {}
         phase, errors = structured_phase_contract(phase_payload, outline, completed_ids)
         if errors:
-            print(json.dumps({"ok": False, "status": "PHASE_CONTRACT_INCOMPLETE", "errors": errors}, ensure_ascii=False, indent=2))
+            print(json.dumps({
+                "ok": False,
+                "status": "PHASE_CONTRACT_INCOMPLETE",
+                "errors": errors,
+                "contract_reference": ".agent/docs/README_GOAL_COMPASS.md#structured-phased-goal-input",
+            }, ensure_ascii=False, indent=2))
             return 2
         observed_at = now()
         payload = activate_structured_phase(

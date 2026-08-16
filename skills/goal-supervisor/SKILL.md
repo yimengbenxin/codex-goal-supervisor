@@ -324,6 +324,16 @@ structured phased program instead of one oversized permanent Goal:
 4. Run `phase-set --outline-file <outline.json> --definition-file <phase.json>`.
    Create the native Goal from the exact returned `goal_mode_objective`, then
    verify its length and SHA-256 against `native_goal_sync` before product work.
+   The canonical phase JSON has top-level `phase_id`, `estimated_hours`,
+   `dependencies`, `validation_ids`, `planning_research`, and one complete
+   `goal_definition` object. `goal_definition` is not a quality marker or an
+   objective string: it contains the same detailed fields accepted by
+   `goal-set --definition-file`, including `first_principles`, `process.nodes`,
+   structured `deliverables`, structured `final_acceptance`, constraints, and
+   non-goals. Do not run an extra detailed `goal-set` before `phase-set`;
+   `phase-set` validates and projects that definition itself. The installed
+   canonical shape is documented under `Structured Phased Goal Input` in
+   `.agent/docs/README_GOAL_COMPASS.md`.
 5. Run `phase-complete` to execute the phase validation IDs. A failed phase
    stays active. Only after it passes may `phase-advance --definition-file
    <next.json>` project a dependency-ready next phase. Complete the old native

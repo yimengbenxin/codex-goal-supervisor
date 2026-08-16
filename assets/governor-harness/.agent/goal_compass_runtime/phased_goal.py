@@ -75,6 +75,12 @@ def validate_outline(payload: Any, north_star_goal: str) -> tuple[dict[str, Any]
         return {}, ["program_outline must be a JSON object"]
     outline = dict(raw)
     errors: list[str] = []
+    if not outline.get("north_star_goal") and outline.get("north_star"):
+        outline["north_star_goal"] = outline["north_star"]
+    if not outline.get("shared_contracts") and isinstance(outline.get("shared_contract"), list):
+        outline["shared_contracts"] = outline["shared_contract"]
+    if not outline.get("final_acceptance") and isinstance(outline.get("total_acceptance"), list):
+        outline["final_acceptance"] = outline["total_acceptance"]
     if str(outline.get("north_star_goal") or "").strip() != str(north_star_goal or "").strip():
         errors.append("program_outline.north_star_goal must exactly match the confirmed North Star")
     errors.extend(research_errors(outline.get("planning_research"), "program_outline"))
@@ -88,6 +94,10 @@ def validate_outline(payload: Any, north_star_goal: str) -> tuple[dict[str, Any]
             errors.append(f"program_outline.phases[{index}] must be an object")
             continue
         row = dict(item)
+        row.setdefault("phase_id", row.get("id"))
+        row.setdefault("title", row.get("name"))
+        row.setdefault("outcome", row.get("business_result"))
+        row.setdefault("dependencies", row.get("depends_on"))
         phase_id = str(row.get("phase_id") or "").strip()
         if not phase_id:
             errors.append(f"program_outline.phases[{index}].phase_id is required")

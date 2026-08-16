@@ -14,6 +14,109 @@ the exact returned objective as the native Goal, and verify its hash. A failed
 by `phase-advance --definition-file <next.json>`. The CLI reports required
 native Goal synchronization but cannot silently rewrite an active Codex Goal.
 
+## Structured Phased Goal Input
+
+`phase-set` consumes two JSON objects. The outline uses these canonical fields:
+
+```json
+{
+  "north_star_goal": "exact confirmed North Star",
+  "planning_research": {
+    "completed": true,
+    "queries": ["current reusable route"],
+    "sources": ["https://primary.example/source"],
+    "reuse_decision": "reuse or bounded-build decision"
+  },
+  "phases": [{
+    "phase_id": "P1",
+    "title": "independently useful outcome",
+    "outcome": "observable business result",
+    "dependencies": [],
+    "outputs": ["validated output"],
+    "consumers": ["named consumer"],
+    "contribution_to_goal": "why this advances the North Star",
+    "estimated_hours": 4
+  }],
+  "shared_contracts": ["cross-phase contract"],
+  "final_acceptance": ["program-level acceptance"]
+}
+```
+
+The phase file uses these canonical top-level fields:
+
+```json
+{
+  "phase_id": "P1",
+  "estimated_hours": 4,
+  "dependencies": [],
+  "validation_ids": ["catalog_validation_id"],
+  "planning_research": {
+    "completed": true,
+    "researched_at": "ISO-8601 timestamp",
+    "queries": ["phase-specific reusable route"],
+    "sources": ["https://primary.example/phase-source"],
+    "tool_sources_reviewed": 1,
+    "article_sources_reviewed": 1,
+    "refresh_interval_hours": 24,
+    "reusable_candidate_found": false,
+    "no_suitable_reuse_reason": "bounded reason"
+  },
+  "goal_definition": {
+    "precise_goal": "current phase result",
+    "problem_statement": "current gap",
+    "current_state": "verified starting state",
+    "desired_state": "verified target state",
+    "stakeholders": ["consumer"],
+    "source_requirements": ["confirmed requirement"],
+    "first_principles": [{
+      "principle": "principle",
+      "rationale": "reason",
+      "implications": ["implementation consequence"]
+    }],
+    "process": {
+      "entry_conditions": ["entry evidence"],
+      "nodes": [{
+        "node_id": "N1",
+        "name": "module",
+        "objective": "module result",
+        "execution_mode": "SERIAL",
+        "inputs": ["input"],
+        "actions": ["action"],
+        "outputs": ["output"],
+        "exit_criteria": ["machine check"],
+        "dependencies": [],
+        "contribution_to_goal": "phase contribution",
+        "timebox_hours": 2,
+        "reminder_interval_hours": 0
+      }],
+      "completion_conditions": ["phase acceptance passes"]
+    },
+    "deliverables": [{
+      "name": "deliverable",
+      "description": "what is delivered",
+      "format": "file or service",
+      "consumer": "named consumer",
+      "acceptance": ["acceptance evidence"]
+    }],
+    "final_acceptance": [{
+      "criterion": "business criterion",
+      "evidence": "evidence location",
+      "validation_method": "catalog command"
+    }],
+    "constraints": ["constraint"],
+    "non_goals": ["non-goal"]
+  }
+}
+```
+
+Use at least two first principles and two process nodes. The rendered current
+phase Goal must be 2,000-3,500 characters. `phase-set` does not require a prior
+detailed `goal-set`; it validates this file, stores the phase projection, and
+returns the exact native Goal objective. Compatibility aliases such as
+`detailed_goal_definition`, `validation_catalog_ids`, `id`, `timebox_hours`,
+and `depends_on` are normalized, but new definitions should use the canonical
+shape above. Contract errors point back to this section.
+
 Each implementation action must have verification proportional to its risk. Use focused evidence for local changes instead of repeatedly running the full suite. Before claiming the entire North Star complete, run `convergence --certify-goal --final-validation-id <catalog-id>` with project-level end-to-end regression ids. Missing or failed regression cannot certify completion; only `CERTIFIED_COMPLETE` can.
 
 Background behavior remains quiet: product writes create bounded verification debt, successful observed validation clears it, and only an explicit completion claim at `Stop` exposes an open debt. A validation start without a `PostToolUse` success remains unverified. Goal Compass state under `.agent/**` and `.codex/**` is excluded from this debt.

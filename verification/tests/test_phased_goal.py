@@ -127,6 +127,53 @@ class PhasedGoalTests(GoalCompassRepoCase):
         self.assertNotIn("project regression proves prompt", result["goal_mode_objective"])
         self.assertEqual(self.json_run("status")["program_phase"]["estimated_hours"], 4.0)
 
+    def test_phase_set_accepts_documented_aliases_without_schema_guessing(self) -> None:
+        outline = self.outline()
+        outline["north_star"] = outline.pop("north_star_goal")
+        outline["shared_contract"] = outline.pop("shared_contracts")
+        outline["total_acceptance"] = outline.pop("final_acceptance")
+        for row in outline["phases"]:
+            row["id"] = row.pop("phase_id")
+            row["name"] = row.pop("title")
+            row["business_result"] = row.pop("outcome")
+            row["depends_on"] = row.pop("dependencies")
+
+        phase = self.phase("P1", "phase_one_pass")
+        phase["id"] = phase.pop("phase_id")
+        phase["timebox_hours"] = phase.pop("estimated_hours")
+        phase["depends_on"] = phase.pop("dependencies")
+        phase["validation_catalog_ids"] = phase.pop("validation_ids")
+        phase["detailed_goal_definition"] = phase.pop("goal_definition")
+        self.write_contracts(phase, outline)
+
+        result = self.json_run(
+            "phase-set",
+            "--outline-file", "program-outline.json",
+            "--definition-file", "phase.json",
+        )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["program_phase"]["phase_id"], "P1")
+        self.assertEqual(result["native_goal_sync"]["objective_chars"], len(result["goal_mode_objective"]))
+
+    def test_phase_contract_error_points_to_installed_canonical_shape(self) -> None:
+        phase = self.phase("P1", "phase_one_pass")
+        phase.pop("goal_definition")
+        self.write_contracts(phase)
+
+        result = self.json_run(
+            "phase-set",
+            "--outline-file", "program-outline.json",
+            "--definition-file", "phase.json",
+            check=False,
+        )
+
+        self.assertFalse(result["ok"])
+        self.assertEqual(
+            result["contract_reference"],
+            ".agent/docs/README_GOAL_COMPASS.md#structured-phased-goal-input",
+        )
+
     def test_phase_estimate_must_be_between_two_and_twenty_four_hours(self) -> None:
         for hours in (1, 25):
             outline = self.outline()

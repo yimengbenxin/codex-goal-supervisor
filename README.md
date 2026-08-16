@@ -164,6 +164,13 @@ current reuse research, declares machine validation, and projects its exact
 the next dependency-ready phase is projected. Small work is never inflated into
 a phase merely because this capability exists.
 
+The phase definition is one self-contained JSON contract: top-level phase ID,
+estimate, dependencies, validation IDs and phase research, plus one complete
+structured `goal_definition`. No preparatory detailed `goal-set` is required.
+Installed projects include the exact canonical JSON shape in
+`.agent/docs/README_GOAL_COMPASS.md`; invalid contracts return that reference
+instead of forcing the Agent to infer nesting from repeated failures.
+
 ## Intervention Policy
 
 | Situation | Supervisor behavior |
