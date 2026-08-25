@@ -304,6 +304,8 @@ def ensure_server(project_root: Path, *, wait_seconds: float = 2.5) -> dict[str,
     token = secrets.token_urlsafe(24)
     command = [
         sys.executable,
+        "-I",
+        "-S",
         str(Path(__file__).resolve()),
         "--serve",
         "--project-root",
@@ -328,7 +330,11 @@ def ensure_server(project_root: Path, *, wait_seconds: float = 2.5) -> dict[str,
         time.sleep(0.05)
         current = _load_json(state_path, {})
         current_url = str(current.get("url") or "")
-        if current.get("pid") == process.pid and current_url and _healthy(current_url, root):
+        # The child writes this metadata only after the loopback socket is
+        # bound. Treat that atomic write as the startup witness; waiting for a
+        # second scheduled HTTP round trip made healthy servers look failed on
+        # busy machines.
+        if current.get("pid") == process.pid and current_url and process.poll() is None:
             current["route_map_ready"] = True
             return {**_public_server_state(current), "route_map_ready": True}
         if process.poll() is not None:
