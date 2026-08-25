@@ -29,5 +29,12 @@ Version: `3.1.2+codex.20260825115629`
   witness; a delayed second HTTP scheduling round no longer mislabels an
   already-bound service as `START_FAILED`.
 
+## Truthful Native Goal Attestation
+
+- A real first Goal creation is valid release evidence and no longer requires a
+  no-value replacement ceremony.
+- A true Goal replacement still requires durable replacement history and must
+  not report the superseded objective as achieved.
+
 These changes remove avoidable process tax without weakening real reuse
 compatibility checks or active-ticket boundaries.
