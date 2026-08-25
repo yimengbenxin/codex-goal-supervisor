@@ -1,6 +1,6 @@
-# Codex Goal Supervisor 3.1.2
+# Codex Goal Supervisor 3.1.3
 
-Version: `3.1.2+codex.20260825115629`
+Version: `3.1.3+codex.20260825143312`
 
 ## Conditional Commercial-Use Consultation
 
@@ -28,6 +28,9 @@ Version: `3.1.2+codex.20260825115629`
 - Successful loopback binding plus atomic server metadata is the startup
   witness; a delayed second HTTP scheduling round no longer mislabels an
   already-bound service as `START_FAILED`.
+- Startup allows a bounded five-second scheduling window under release-suite
+  load. A child that still fails to publish bound-port metadata is terminated
+  and its stale metadata is removed instead of being left behind.
 
 ## Truthful Native Goal Attestation
 
