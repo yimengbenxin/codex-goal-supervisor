@@ -321,9 +321,11 @@ def compile_source() -> None:
 
 
 def run_source_verification() -> list[dict[str, Any]]:
+    # Execute the complete suite once from source. The extracted archive uses
+    # discover mode below, so both supported entry points are release-gated
+    # without running the same complete suite four times.
     commands = [
         [sys.executable, "-m", "unittest", "-q", "verification.tests.test_goal_compass"],
-        [sys.executable, "-m", "unittest", "discover", "-s", "verification/tests", "-q"],
         [sys.executable, "assets/governor-harness/.agent/selftest/test_goal_compass.py"],
     ]
     results = []
@@ -369,7 +371,6 @@ def run_extracted_verification(full_archive: Path) -> list[dict[str, Any]]:
             bundle.extractall(root)
         plugin = root / "codex-goal-supervisor"
         commands = [
-            [sys.executable, "-m", "unittest", "-q", "verification.tests.test_goal_compass"],
             [sys.executable, "-m", "unittest", "discover", "-s", "verification/tests", "-q"],
             [sys.executable, "assets/governor-harness/.agent/selftest/test_goal_compass.py"],
         ]

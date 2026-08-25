@@ -206,6 +206,30 @@ class ReleasePublishTests(unittest.TestCase):
                 PUBLISHER.publish(dry_run=True)
         compile_source.assert_not_called()
 
+    def test_release_gate_runs_each_complete_suite_once_across_source_and_archive(self) -> None:
+        completed = subprocess.CompletedProcess([], 0, "ok", "")
+        with mock.patch.object(PUBLISHER, "run_command", return_value=completed) as run:
+            PUBLISHER.run_source_verification()
+        source_commands = [call.args[0] for call in run.call_args_list]
+        self.assertIn(
+            [sys.executable, "-m", "unittest", "-q", "verification.tests.test_goal_compass"],
+            source_commands,
+        )
+        self.assertFalse(any("discover" in command for command in source_commands))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            archive = Path(temporary) / "full.zip"
+            with zipfile.ZipFile(archive, "w") as bundle:
+                bundle.writestr("codex-goal-supervisor/README.md", "release\n")
+            with mock.patch.object(PUBLISHER, "run_command", return_value=completed) as run:
+                PUBLISHER.run_extracted_verification(archive)
+        archive_commands = [call.args[0] for call in run.call_args_list]
+        self.assertIn(
+            [sys.executable, "-m", "unittest", "discover", "-s", "verification/tests", "-q"],
+            archive_commands,
+        )
+        self.assertFalse(any("verification.tests.test_goal_compass" in command for command in archive_commands))
+
     def test_release_requires_blackbox_attestation_before_verification(self) -> None:
         with mock.patch.object(PUBLISHER, "BLACKBOX_ATTESTATION", Path("/definitely/missing")):
             with self.assertRaisesRegex(PUBLISHER.PublishError, "pre-publication real black-box"):

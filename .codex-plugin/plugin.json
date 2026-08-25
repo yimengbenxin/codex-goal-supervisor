@@ -1,6 +1,6 @@
 {
   "name": "codex-goal-supervisor",
-  "version": "3.1.3+codex.20260825143312",
+  "version": "3.1.4+codex.20260825153953",
   "description": "Low-noise execution convergence for ordinary Codex work and long-running Goals",
   "author": {
     "name": "Codex Goal Supervisor contributors"
