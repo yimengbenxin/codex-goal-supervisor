@@ -29,6 +29,9 @@ Version: `3.2.0+codex.20260826152106`
 
 ## Verification
 
+- The release gate runs every verification module in bounded parallel
+  subprocesses. It preserves complete coverage and per-module timeouts while
+  avoiding the cumulative startup cost of 600+ isolated fixtures.
 - Deterministic Agent Assembler tests cover blueprint validation, isolated
   fetching, verification, locking, deterministic packaging, path exclusion,
   metadata-only experience, and release-edition separation.
