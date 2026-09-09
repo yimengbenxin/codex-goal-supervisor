@@ -126,6 +126,7 @@ from goal_compass_runtime.procedure_memory import (
     normalize_command as normalize_procedure_command,
     record_successful_command as record_procedure_command,
 )
+from goal_compass_runtime.subagent_context import compact_status as subagent_context_status
 from goal_compass_runtime.phased_goal import (
     MODE as STRUCTURED_PHASE_MODE,
     activate as activate_structured_phase,
@@ -197,6 +198,7 @@ CONTEXT_CONTINUITY_STATE = RUNTIME / "context_continuity.json"
 CONTEXT_CAPSULE = RUNTIME / "context" / "index.json"
 GOAL_RETURN_STATE = RUNTIME / "goal_return" / "state.json"
 PROCEDURE_MEMORY_STATE = RUNTIME / "procedure_memory.json"
+SUBAGENT_CONTEXT_REGISTRY = RUNTIME / "subagent_context" / "registry.json"
 LLM_JUDGE_SCHEMA_PATH = PROTOCOLS / "llm_judge.schema.json"
 HOOKS = CODEX / "hooks.json"
 PARALLEL_REGISTRY_DIR = "goal-compass"
@@ -7375,6 +7377,7 @@ def hooks_json() -> dict[str, Any]:
             "PostCompact": [{"matcher": "manual|auto", "hooks": [entry]}],
             "SessionStart": [{"matcher": ".*", "hooks": [context_entry]}],
             "SubagentStart": [{"matcher": ".*", "hooks": [context_entry]}],
+            "SubagentStop": [{"matcher": ".*", "hooks": [entry]}],
             "UserPromptSubmit": [{"matcher": ".*", "hooks": [context_entry]}],
             "Stop": [{"matcher": ".*", "hooks": [entry]}],
         }
@@ -7398,7 +7401,7 @@ def merge_hooks_json(existing: dict[str, Any], generated: dict[str, Any]) -> dic
     generated_hooks = generated.get("hooks", {})
     for event in (
         "PreToolUse", "PostToolUse", "PreCompact", "PostCompact",
-        "SessionStart", "SubagentStart", "UserPromptSubmit", "Stop",
+        "SessionStart", "SubagentStart", "SubagentStop", "UserPromptSubmit", "Stop",
     ):
         preserved = []
         for group in result_hooks.get(event, []):
@@ -10039,6 +10042,17 @@ def cmd_init(_: argparse.Namespace) -> int:
                 "auditor": "on_delivery_or_failed_validation",
                 "janitor": "on_artifact_sprawl_mark_only",
             },
+            "subagent_context": {
+                "enabled": True,
+                "mode": "bounded_capsule",
+                "target_chars": 720,
+                "hard_max_chars": 1200,
+                "preserve_invalid_raw_result": True,
+                "include_assess": True,
+                "revision_tracking": True,
+                "auto_read_artifact": False,
+                "max_correction_attempts": 2,
+            },
         })
     else:
         mode = tool_mode_config()
@@ -10049,6 +10063,17 @@ def cmd_init(_: argparse.Namespace) -> int:
             "deviation_clear_after_corrected_days": 7,
         })
         mode["intervention_policy"] = policy
+        mode.setdefault("subagent_context", {
+            "enabled": True,
+            "mode": "bounded_capsule",
+            "target_chars": 720,
+            "hard_max_chars": 1200,
+            "preserve_invalid_raw_result": True,
+            "include_assess": True,
+            "revision_tracking": True,
+            "auto_read_artifact": False,
+            "max_correction_attempts": 2,
+        })
         write_json(TOOL_MODE, mode)
     if not OBSERVER_STATE.exists():
         write_json(OBSERVER_STATE, empty_observer_state())
@@ -10560,6 +10585,7 @@ def cmd_status(args: argparse.Namespace) -> int:
                 Path.cwd(), CONTEXT_CONTINUITY_STATE, CONTEXT_CAPSULE,
             ),
             "procedures": procedure_memory_status(Path.cwd(), PROCEDURE_MEMORY_STATE),
+            "subagent_context": subagent_context_status(SUBAGENT_CONTEXT_REGISTRY),
             "goal_return": goal_return_status(GOAL_RETURN_STATE),
             "mdcp": {
                 "precision_level": mdcp_fields.get("precision_level"),

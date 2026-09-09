@@ -25,7 +25,11 @@ still owns the work and final judgment.
   It is a zero-write check when the project runtime already matches the loaded
   plugin and otherwise performs a state-preserving `--force --no-init` refresh.
   Never combine it with `--reset-state`. CLI calls use the refreshed runtime
-  immediately; project hooks already loaded by the current Codex task may stay
+  immediately. A file-parity result is not proof of Hook activation: inspect
+  native `hooks/list` for the project, including discovery, enabled status and
+  exact-hash trust. A CLI `-c projects...trust_level` override alone may not
+  enable the project config layer. Use the host's project and Hook trust flow;
+  never silently grant broad trust. Project hooks already loaded by the current Codex task may stay
   stale until a new task, so do not claim live hook coverage that was not
   verified.
 - Explicit plugin activation starts the General Profile for ordinary Codex work;
@@ -112,6 +116,64 @@ After the mandatory North Star and Goal-mode setup, the AI may call these when t
 - **Bounded ticket** via `compile/ready/start/close` when isolation, machine certification, or parallel ownership will save rework.
 
 These capabilities are never required merely because they exist. Do not create ceremonial receipts, reviews, or tickets.
+
+## Adaptive Coding Execution
+
+For coding work inside an explicitly activated project, use the installed
+`.agent/protocols/default_coding_execution_policy.md` as the detailed execution
+contract. Apply it adaptively under the supreme rule:
+
+- The main thread owns intent, architecture decisions, dependency order,
+  integration, escalation, and final acceptance.
+- A small, focused, tightly coupled, reversible, or read-only task may stay in
+  the main thread with no ticket and no Subagent.
+- Delegate independent, high-volume, mechanical, context-heavy, or separately
+  verifiable work when doing so saves more time or context than coordination
+  costs.
+- `Luna Max` is the preferred default high-volume coding worker when available
+  and compatible. An explicit user choice, technical incompatibility, or a more
+  specific company-role contract may select another supported model.
+- Give a worker a bounded assignment with goal, inputs, relevant paths,
+  writable boundaries, dependencies, interfaces, assertions, evidence target,
+  and stop/escalation conditions. Do not pass the complete main-thread history
+  by default.
+- A repeated repair needs new evidence, a new causal hypothesis, or a materially
+  different strategy. Two failed attempts against the same assertion without
+  new evidence return root-cause ownership to the main thread.
+- Token-stage percentages are advisory observations, not quotas or blocking
+  thresholds. Activity volume never substitutes for acceptance progress.
+
+Every project-local Subagent receives a compact result contract through the
+supported `SubagentStart` hook. Its final response must be a bounded capsule:
+
+```text
+TASK_ID/RN | DONE|PARTIAL|BLOCKED|FAILED | optional SUPERSEDES RN
+ACTION: work actually performed
+VERIFY: checks actually run and result, or NOT_RUN
+ASSESS: optional short uncertain worker judgment
+ARTIFACT: optional project-relative path
+```
+
+Detailed logs, diffs, research, and explanations stay in the workspace or the
+named artifact. `DONE` is only worker execution state. It never means root
+acceptance, system verification, or project completion. The main thread reads
+the capsule first and pulls focused workspace, diff, test, or artifact evidence
+only when the next decision requires it.
+
+The `SubagentStop` hook checks capsule shape, size, authority language, artifact
+path, and revision sequence. It may return one bounded correction prompt and
+records accepted capsules under `.agent/runtime/subagent_context/`. Rework of
+the same task uses `R2 | SUPERSEDES R1` and advances the canonical revision;
+old revisions remain history. Multiple workers cannot claim the same task
+revision.
+
+Codex currently lets `SubagentStop` inspect a final response and continue the
+Subagent, but it does not let a plugin replace the parent-visible payload;
+`suppressOutput` is not implemented. Therefore correction retries are bounded
+to avoid a hook-created loop. If a worker still violates the contract, its
+result remains explicitly unverified and the main thread must inspect workspace
+evidence before acceptance. Do not claim that the plugin provides a transport-
+level injection guarantee that the host API does not expose.
 
 ## Live Technical Route
 

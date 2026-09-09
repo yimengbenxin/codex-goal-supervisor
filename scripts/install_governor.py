@@ -175,7 +175,7 @@ def merge_hooks_defaults(src: Path, dst: Path) -> str:
     generated_hooks = generated.get("hooks", {})
     for event in (
         "PreToolUse", "PostToolUse", "PreCompact", "PostCompact",
-        "SessionStart", "SubagentStart", "UserPromptSubmit", "Stop",
+        "SessionStart", "SubagentStart", "SubagentStop", "UserPromptSubmit", "Stop",
     ):
         preserved = []
         for group in result_hooks.get(event, []):
@@ -356,7 +356,7 @@ def plugin_version() -> str:
 def managed_runtime_sha256(target: Path) -> str:
     """Hash every installer-owned immutable file using the source file set."""
     digest = hashlib.sha256()
-    excluded = STATE_FILES | set(MERGE_JSON_FILES) | {PROVENANCE_FILE}
+    excluded = STATE_FILES | set(MERGE_JSON_FILES) | {PROVENANCE_FILE, HOOKS_FILE}
     for source in sorted(path for path in HARNESS_ROOT.rglob("*") if path.is_file()):
         rel = source.relative_to(HARNESS_ROOT)
         rel_text = rel.as_posix()
@@ -415,6 +415,12 @@ def main() -> int:
     if policy_result != 0:
         return policy_result
     if args.no_init:
+        refreshed = subprocess.run(
+            [sys.executable, str(target / '.agent/goal_compass_runtime/refresh_hooks.py')],
+            cwd=str(target), timeout=15, check=False,
+        )
+        if refreshed.returncode:
+            return refreshed.returncode
         write_install_provenance(target, writes, skips, filtered, initialized=False)
         return 0
     result = maybe_init(target)

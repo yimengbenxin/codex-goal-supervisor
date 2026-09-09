@@ -35,6 +35,37 @@ def run_installer_no_subprocess(installer_path, repo, force=True, reset_state=Fa
 
 
 class InstallTests(MinimalPluginFixtureCase):
+    def test_runtime_ensure_installs_hooks_without_reset_and_is_idempotent(self) -> None:
+        ensure = PLUGIN_ROOT / 'scripts/ensure_project_runtime.py'
+        command = [sys.executable, str(ensure), str(self.repo)]
+        first = json.loads(run_cmd(command, cwd=PLUGIN_ROOT, timeout=40, check=True).stdout)
+        self.assertTrue(first['after']['current'])
+        path = self.repo / '.codex/hooks.json'
+        hooks = json.loads(path.read_text(encoding='utf-8'))
+        self.assertIn('SubagentStop', hooks['hooks'])
+        before = path.stat().st_mtime_ns
+        second = json.loads(run_cmd(command, cwd=PLUGIN_ROOT, timeout=40, check=True).stdout)
+        self.assertEqual(second['status'], 'CURRENT')
+        self.assertEqual(path.stat().st_mtime_ns, before)
+        self.assertFalse(second['hook_trust_verified'])
+
+    def test_runtime_ensure_recovers_missing_hooks_preserving_custom_hook(self) -> None:
+        ensure = PLUGIN_ROOT / 'scripts/ensure_project_runtime.py'
+        command = [sys.executable, str(ensure), str(self.repo)]
+        run_cmd(command, cwd=PLUGIN_ROOT, timeout=40, check=True)
+        path = self.repo / '.codex/hooks.json'
+        custom = {'type': 'command', 'command': 'echo custom'}
+        path.write_text(json.dumps({'hooks': {'Stop': [{'hooks': [custom]}]}}), encoding='utf-8')
+        current = self.repo / '.agent/current_ticket.json'
+        current.write_text('{"status":"ACTIVE","ticket_id":"preserved"}', encoding='utf-8')
+        before = current.read_bytes()
+        result = json.loads(run_cmd(command, cwd=PLUGIN_ROOT, timeout=40, check=True).stdout)
+        self.assertIn('project_hooks_missing', result['before']['reasons'])
+        self.assertEqual(current.read_bytes(), before)
+        hooks = json.loads(path.read_text(encoding='utf-8'))['hooks']
+        self.assertIn('SubagentStop', hooks)
+        self.assertTrue(any(custom in group['hooks'] for group in hooks['Stop']))
+
     def test_runtime_ensure_updates_stale_install_and_preserves_project_state(self) -> None:
         installer = PLUGIN_ROOT / "scripts" / "install_governor.py"
         ensure = PLUGIN_ROOT / "scripts" / "ensure_project_runtime.py"
@@ -298,7 +329,7 @@ class InstallTests(MinimalPluginFixtureCase):
         self.assertIn("echo custom", json.dumps(merged))
         for event in (
             "PreToolUse", "PostToolUse", "PreCompact", "PostCompact",
-            "SessionStart", "SubagentStart", "UserPromptSubmit", "Stop",
+            "SessionStart", "SubagentStart", "SubagentStop", "UserPromptSubmit", "Stop",
         ):
             handlers = [handler for group in merged["hooks"][event] for handler in group.get("hooks", [])]
             compass = [handler for handler in handlers if "goal_compass.py" in handler.get("command", "")]

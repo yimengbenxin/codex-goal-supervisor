@@ -1,6 +1,6 @@
 {
   "name": "codex-goal-supervisor",
-  "version": "3.2.0+codex.20260826152106",
+  "version": "3.3.0+codex.20260909054616",
   "description": "Low-noise execution convergence and optional reproducible Agent assembly for Codex",
   "author": {
     "name": "Codex Supervisor contributors"
@@ -21,6 +21,8 @@
       "Goal-return recovery after bounded interruptions and compaction",
       "Required General instruction hygiene for resolved corrections and compacted temporary requests",
       "Hierarchical local context continuity for large reads",
+      "Adaptive main-thread and Subagent coding execution",
+      "Bounded Subagent Result Capsules with revision tracking",
       "Evidence-backed final North Star regression certification",
       "Silent product-write verification debt with completion-claim reminders",
       "Optional bounded tickets",

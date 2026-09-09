@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "codex-supervisor/subagent-result-capsule/v1",
+  "title": "Codex Supervisor Subagent Result Capsule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "revision",
+    "exec_state",
+    "action",
+    "verify",
+    "root_acceptance"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "exec_state": {
+      "enum": ["DONE", "PARTIAL", "BLOCKED", "FAILED"]
+    },
+    "root_acceptance": {
+      "enum": ["UNREVIEWED", "ACCEPTED", "REWORK_REQUIRED", "REJECTED"]
+    },
+    "supersedes": {
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verify": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assess": {
+      "type": ["string", "null"]
+    },
+    "artifact": {
+      "type": ["string", "null"]
+    }
+  }
+}

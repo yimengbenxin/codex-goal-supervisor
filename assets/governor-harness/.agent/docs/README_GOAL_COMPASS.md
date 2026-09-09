@@ -255,6 +255,30 @@ ordinary reads are never converted into executable procedures.
 
 The same deviation is rechecked after 30 minutes of continued affected-path work. Unrelated success does not clear it. Judge results are structured and cached; unavailable, malformed, or timed-out judgment fails open. `deviation-correct` opens a scoped repair lane; `deviation-corrected` starts seven days of active recurrence monitoring. A recurrence restores the rail immediately. Counts clear only after explicit correction, seven clean days, and real project activity.
 
+## Adaptive Coding And Subagent Results
+
+The installed `.agent/protocols/default_coding_execution_policy.md` defines the
+full coding execution policy. The main thread keeps decision, integration, and
+final-acceptance ownership. It may perform small or tightly coupled work
+directly. It delegates independent, high-volume, mechanical, context-heavy, or
+separately verifiable work only when delegation has positive net benefit.
+Delegation does not require a persisted ticket.
+
+`SubagentStart` supplies each worker a bounded assignment/result contract.
+`SubagentStop` accepts only a compact result with task/revision, execution
+state, `ACTION`, actual `VERIFY`, optional `ASSESS`, and an optional
+project-relative `ARTIFACT`. Detailed logs and reasoning remain in the
+workspace or local artifact. `DONE` never means root acceptance. A corrected
+revision explicitly supersedes the previous one, while the parent remains the
+sole acceptance authority.
+
+Accepted results and bounded telemetry live under
+`.agent/runtime/subagent_context/` and appear only in `status --verbose`.
+Invalid long results are retained locally when possible and receive a bounded
+correction retry. Codex currently does not expose transport-level replacement
+of the parent-visible Subagent payload, so retry exhaustion is recorded as an
+unverified worker result instead of creating an infinite hook loop.
+
 ## Explicit Optional Layer
 
 Call only when the expected saved rework is concrete:

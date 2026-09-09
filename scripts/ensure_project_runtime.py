@@ -60,6 +60,17 @@ def inspect(project_root: Path) -> dict[str, Any]:
         reasons.append("runtime_hash_mismatch")
     if managed_runtime_sha256 != expected_managed_sha256 or recorded_managed_sha256 != managed_runtime_sha256:
         reasons.append("managed_runtime_hash_mismatch")
+    hooks = load_json(project_root / '.codex/hooks.json').get('hooks', {})
+    required_events = ('PreToolUse', 'PostToolUse', 'SessionStart', 'SubagentStart',
+                       'SubagentStop', 'UserPromptSubmit', 'PreCompact', 'PostCompact', 'Stop')
+    missing_hooks = [event for event in required_events if not any(
+        install_governor.is_goal_compass_hook(handler)
+        for group in (hooks.get(event, []) if isinstance(hooks, dict) else [])
+        if isinstance(group, dict)
+        for handler in group.get('hooks', [])
+    )]
+    if missing_hooks:
+        reasons.append('project_hooks_missing')
     return {
         "project_root": str(project_root),
         "plugin_version": plugin_version,
@@ -71,6 +82,8 @@ def inspect(project_root: Path) -> dict[str, Any]:
         "recorded_managed_runtime_sha256": recorded_managed_sha256,
         "current": not reasons,
         "reasons": reasons,
+        "missing_hook_events": missing_hooks,
+        "hook_trust_verified": False,
     }
 
 

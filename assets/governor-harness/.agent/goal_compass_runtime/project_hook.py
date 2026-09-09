@@ -88,6 +88,10 @@ from goal_compass_runtime.procedure_memory import (
     finalize_thread as finalize_procedure_thread,
     record_successful_command as record_procedure_command,
 )
+from goal_compass_runtime.subagent_context import (
+    start_context as subagent_result_start_context,
+    stop_decision as subagent_result_stop_decision,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -119,6 +123,8 @@ INSTRUCTION_HYGIENE_LOCK = AGENT / "runtime" / "instruction_hygiene.lock"
 PROCEDURE_MEMORY_STATE = AGENT / "runtime" / "procedure_memory.json"
 PROCEDURE_MEMORY_LOCK = AGENT / "runtime" / "procedure_memory.lock"
 GOAL_WORKSTREAMS = AGENT / "runtime" / "goal_workstreams.json"
+SUBAGENT_CONTEXT_REGISTRY = AGENT / "runtime" / "subagent_context" / "registry.json"
+SUBAGENT_CONTEXT_LOCK = AGENT / "runtime" / "subagent_context" / "registry.lock"
 FULL_COMPASS = AGENT / "goal_compass.py"
 
 CONTROL_PATTERNS = (
@@ -519,6 +525,12 @@ def handle_context_event(event: dict[str, Any]) -> str | None:
             subagent_context(PROJECT_ROOT, CONTEXT_STATE, CONTEXT_CAPSULE, event),
             goal_workstream_thread_context(
                 load_json(GOAL_WORKSTREAMS, {}), north, event_thread_id(event),
+            ),
+            subagent_result_start_context(
+                AGENT,
+                SUBAGENT_CONTEXT_REGISTRY,
+                SUBAGENT_CONTEXT_LOCK,
+                event,
             ),
         ) if value) or None
     if phase == "UserPromptSubmit":
@@ -1009,6 +1021,21 @@ def main() -> int:
             context_message = "\n\n".join(value for value in (context_message, segment_context) if value)
     if context_message:
         output(context=context_message, hook_event_name=phase)
+    if phase == "SubagentStop":
+        decision = subagent_result_stop_decision(
+            PROJECT_ROOT,
+            AGENT,
+            SUBAGENT_CONTEXT_REGISTRY,
+            SUBAGENT_CONTEXT_LOCK,
+            event,
+        )
+        if decision.get("action") == "retry":
+            output(stop_block=str(decision.get("reason") or "Return a bounded Result Capsule."))
+        elif decision.get("action") == "warn":
+            print(json.dumps({"systemMessage": str(decision.get("reason") or "Subagent result is unverified.")}, ensure_ascii=False))
+        else:
+            print("{}")
+        return 0
     if phase == "Stop":
         hygiene_block = instruction_hygiene_stop(
             INSTRUCTION_HYGIENE_STATE, INSTRUCTION_HYGIENE_LOCK, event,

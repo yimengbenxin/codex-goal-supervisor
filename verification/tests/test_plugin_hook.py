@@ -108,10 +108,55 @@ class PluginHookTests(unittest.TestCase):
         self.assertIn("-X utf8", encoded)
         self.assertNotIn(" -c ", config["hooks"]["PreToolUse"][0]["hooks"][0]["commandWindows"])
         self.assertIn("windows_hook.py", encoded)
-        for event in ("PreCompact", "PostCompact", "SessionStart", "SubagentStart", "UserPromptSubmit", "Stop"):
+        for event in ("PreCompact", "PostCompact", "SessionStart", "SubagentStart", "SubagentStop", "UserPromptSubmit", "Stop"):
             self.assertIn(event, config["hooks"])
         self.assertNotIn("additionalContextLimit", config["hooks"]["PreCompact"][0]["hooks"][0])
         self.assertEqual(config["hooks"]["SessionStart"][0]["hooks"][0]["additionalContextLimit"], 800)
+
+    def test_repo_hook_enforces_subagent_result_capsule(self) -> None:
+        start_output = self.hook({
+            "session_id": "subagent-parent",
+            "turn_id": "turn-subagent",
+            "cwd": str(self.repo),
+            "hook_event_name": "SubagentStart",
+            "agent_id": "subagent-1",
+            "agent_type": "worker",
+        })
+        task_id = json.loads(start_output)["hookSpecificOutput"]["additionalContext"].splitlines()[1].split("/R1", 1)[0]
+        invalid = self.hook({
+            "session_id": "subagent-parent",
+            "turn_id": "turn-subagent",
+            "cwd": str(self.repo),
+            "hook_event_name": "SubagentStop",
+            "agent_id": "subagent-1",
+            "agent_type": "worker",
+            "stop_hook_active": False,
+            "last_assistant_message": "I fixed it and here is a long narrative.",
+        })
+        accepted = self.hook({
+            "session_id": "subagent-parent",
+            "turn_id": "turn-subagent",
+            "cwd": str(self.repo),
+            "hook_event_name": "SubagentStop",
+            "agent_id": "subagent-1",
+            "agent_type": "worker",
+            "stop_hook_active": True,
+            "last_assistant_message": (
+                f"{task_id}/R1 | DONE\n"
+                "ACTION: changed src/client.py\n"
+                "VERIFY: 3/3 targeted tests PASS; full suite NOT_RUN"
+            ),
+        })
+
+        self.assertEqual(json.loads(invalid)["decision"], "block")
+        self.assertEqual(json.loads(accepted), {})
+        registry = json.loads((self.repo / ".agent/runtime/subagent_context/registry.json").read_text(encoding="utf-8"))
+        result = registry["tasks"][task_id]["revisions"]["1"]
+        self.assertEqual(result["exec_state"], "DONE")
+        self.assertEqual(result["root_acceptance"], "UNREVIEWED")
+        status = json.loads(self.cli("status", "--verbose").stdout)
+        self.assertEqual(status["subagent_context"]["task_count"], 1)
+        self.assertEqual(status["subagent_context"]["current"][0]["task_id"], task_id)
 
     def test_repo_hook_records_and_closes_temporary_prompt(self) -> None:
         self.cli("goal-set", "--text", "Build a reliable local product.")
@@ -981,7 +1026,8 @@ class PluginHookTests(unittest.TestCase):
         })
 
         self.assertIn("stay read-only", read_output)
-        self.assertEqual(implementation_output, "")
+        self.assertIn("Subagent result contract", implementation_output)
+        self.assertNotIn("stay read-only", implementation_output)
 
     def test_inactive_project_hook_blocks_only_deterministic_boundaries(self) -> None:
         cases = (
