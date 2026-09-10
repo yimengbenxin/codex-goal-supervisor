@@ -5,6 +5,10 @@ governance without making tickets or Subagents mandatory.
 
 ## Coding execution
 
+- Previously authorized compatible reuse can reference the existing user
+  instruction without pretending a new consultation occurred. Missing authority
+  or material commercial compatibility questions still require an actual answer.
+
 - The main thread retains user-intent, architecture, integration, escalation,
   and final-acceptance ownership.
 - Small, focused, tightly coupled, reversible, and read-only work may execute

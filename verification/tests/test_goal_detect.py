@@ -538,6 +538,12 @@ class GoalDetectTests(GoalCompassRepoCase):
         definition["planning_research"]["commercial_use_affects_compatibility"] = False
         definition["planning_research"]["user_consultation"].pop("commercial_use")
         definition["planning_research"]["reuse_decisions"][0]["license"] = "MIT"
+        definition["planning_research"]["user_consultation"].update({
+            "asked_in_conversation": False,
+            "required": False,
+            "authorization_source": "existing_user_instruction",
+            "authorization_ref": "User explicitly selected this compatible dependency in the task.",
+        })
         definition_path = self.root / "goal-definition.json"
         definition_path.write_text(json.dumps(definition, ensure_ascii=False, indent=2), encoding="utf-8")
 

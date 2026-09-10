@@ -1879,7 +1879,13 @@ def planning_research_errors(definition: dict[str, Any]) -> list[str]:
         if not str(research.get("reusable_candidate_name") or "").strip():
             errors.append("planning_research.reusable_candidate_name")
         consultation = research.get("user_consultation") if isinstance(research.get("user_consultation"), dict) else {}
-        if consultation.get("asked_in_conversation") is not True:
+        prior_authorization = (
+            consultation.get("required") is False
+            and consultation.get("authorization_source") == "existing_user_instruction"
+            and bool(str(consultation.get("authorization_ref") or "").strip())
+            and not commercial_use_confirmation_required(research)
+        )
+        if consultation.get("asked_in_conversation") is not True and not prior_authorization:
             errors.append("planning_research.user_consultation.asked_in_conversation")
         if str(consultation.get("reuse_choice") or "").strip().upper() not in {"USE", "ADAPT", "REJECT"}:
             errors.append("planning_research.user_consultation.reuse_choice")
